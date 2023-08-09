@@ -1,0 +1,42 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "description": "Default build",
+            "binaryDir": "${sourceDir}/build/default",
+            "cacheVariables": {
+                "FETCH_DEPS": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+        {
+            "name": "dev",
+            "description": "Developer build",
+            "binaryDir": "${sourceDir}/build/dev",
+            "cacheVariables": {
+                "FETCH_DEPS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "ENABLE_TESTS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "dev",
+            "configurePreset": "dev",
+            "jobs": 16
+        }
+    ]
+}
