@@ -47,9 +47,24 @@ void test_crypto_psbt_parse() {
     TEST_ASSERT_EQUAL(0x00, psbt.buffer[psbt.psbt_len - 1]);
 }
 
+void test_crypto_eckey_parse() {
+    // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt
+    const char *hex = "a202f50358208c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa";
+    uint8_t raw[BUFSIZE];
+    int len = h2b(hex, (uint8_t *)(&raw), BUFSIZE);
+    TEST_ASSERT_GREATER_THAN_INT(0, len);
+
+    crypto_eckey eckey;
+    bcr_error err = parse_eckey(raw, len, &eckey);
+    TEST_ASSERT_EQUAL(key_type_private, eckey.type);
+}
+
+
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_crypto_seed_parse);
     RUN_TEST(test_crypto_psbt_parse);
+    RUN_TEST(test_crypto_eckey_parse);
     return UNITY_END();
 }
