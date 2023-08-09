@@ -24,8 +24,10 @@ typedef struct bcr_error {
     bcr_error_tags tag;
 } bcr_error;
 
+
 typedef enum bcr_tagged_types {
     bcr_tagged_type_crypto_seed = 300,
+    bcr_tagged_type_crypto_psbt = 310,
 } bcr_tagged_types;
 
 
@@ -37,6 +39,13 @@ typedef struct crypto_seed{
 
 } crypto_seed;
 
+typedef struct crypto_psbt{
+    uint8_t *buffer;
+    size_t buffer_size;
+    size_t psbt_len;
+
+} crypto_psbt;
 
 
 bcr_error parse_seed(const uint8_t *buffer, unsigned int size, crypto_seed* out);
+bcr_error parse_psbt(const uint8_t *buffer, unsigned int size, crypto_psbt* out);

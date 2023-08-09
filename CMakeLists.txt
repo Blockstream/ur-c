@@ -18,6 +18,7 @@ endif()
 add_library(bcr 
     src/bcr.c include/bcr/bcr.h
     src/parser.c src/parser.h
+    src/macros.h
 )
 
 target_link_libraries(bcr PUBLIC PkgConfig::TinyCBOR)

@@ -38,5 +38,11 @@
             "configurePreset": "dev",
             "jobs": 16
         }
+    ],
+    "testPresets": [
+        {
+            "name": "dev",
+            "configurePreset": "dev"
+        }
     ]
 }
