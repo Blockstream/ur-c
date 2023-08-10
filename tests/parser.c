@@ -57,22 +57,44 @@ void test_crypto_eckey_parse() {
     crypto_eckey eckey;
     bcr_error err = parse_eckey(raw, len, &eckey);
     TEST_ASSERT_EQUAL(bcr_error_tag_noerror, err.tag);
-    TEST_ASSERT_EQUAL(key_type_private, eckey.type);
+    TEST_ASSERT_EQUAL(eckey_type_private, eckey.type);
     TEST_ASSERT_EQUAL(0x8c, eckey.key.private[0]);
     TEST_ASSERT_EQUAL(0xaa, eckey.key.private[CRYPTO_ECKEY_PRIVATE_SIZE - 1]);
 }
 
-void test_crypto_p2pkh_parse() {
+void test_crypto_output_parse_p2pkh() {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md#exampletest-vector-1
     const char *hex = "d90193d90132a103582102c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5";
     uint8_t raw[BUFSIZE];
     int len = h2b(hex, (uint8_t *)(&raw), BUFSIZE);
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
-    crypto_p2pkh pkh;
-    bcr_error err = parse_p2pkh(raw, len, &pkh);
+    crypto_output output;
+    bcr_error err = parse_output(raw, len, &output);
     TEST_ASSERT_EQUAL(bcr_error_tag_noerror, err.tag);
+    TEST_ASSERT_EQUAL(output_type_p2pkh, output.type);
+    TEST_ASSERT_EQUAL(p2pkh_type_eckey, output.output.p2pkh.type);
+    TEST_ASSERT_EQUAL(eckey_type_public_compressed, output.output.p2pkh.key.eckey.type);
+    TEST_ASSERT_EQUAL(0x02, output.output.p2pkh.key.eckey.key.public_compressed[0]);
+    TEST_ASSERT_EQUAL(0xe5, output.output.p2pkh.key.eckey.key.public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
 }
+
+void test_crypto_output_parse_p2sh_p2wpkh() {
+    // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md#exampletest-vector-1
+    const char *hex = "d90190d90194d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556";
+    uint8_t raw[BUFSIZE];
+    int len = h2b(hex, (uint8_t *)(&raw), BUFSIZE);
+    TEST_ASSERT_GREATER_THAN_INT(0, len);
+
+    crypto_output output;
+    bcr_error err = parse_output(raw, len, &output);
+    // TEST_ASSERT_EQUAL(bcr_error_tag_noerror, err.tag);
+    // TEST_ASSERT_EQUAL(output_type_psh_p2wpkh, output.type);
+    // TEST_ASSERT_EQUAL(key_type_public_compressed, output.output.ps.key.type);
+    // TEST_ASSERT_EQUAL(0x02, output.output.p2pkh.key.eckey.public_uncompressed[0]);
+    // TEST_ASSERT_EQUAL(0xe5, output.output.p2pkh.key.eckey.public_uncompressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
+}
+
 
 
 
@@ -81,6 +103,7 @@ int main() {
     RUN_TEST(test_crypto_seed_parse);
     RUN_TEST(test_crypto_psbt_parse);
     RUN_TEST(test_crypto_eckey_parse);
-    RUN_TEST(test_crypto_p2pkh_parse);
+    RUN_TEST(test_crypto_output_parse_p2pkh);
+    RUN_TEST(test_crypto_output_parse_p2sh_p2wpkh);
     return UNITY_END();
 }

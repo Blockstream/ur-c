@@ -4,7 +4,7 @@
 #include "utils.h"
 
 bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
-    out->type = uninitialized;
+    out->type = eckey_type_na;
     bcr_error result = {.tag = bcr_error_tag_noerror};
 
     CHECK_IS_TYPE(iter, map, result, exit);
@@ -52,7 +52,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
         if (result.tag -= bcr_error_tag_noerror) {
             goto leave_and_exit;
         }
-        out->type = key_type_private;
+        out->type = eckey_type_private;
         goto leave_and_exit;
     }
     size_t len;
@@ -64,7 +64,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
         if (result.tag != bcr_error_tag_noerror) {
             goto leave_and_exit;
         }
-        out->type = key_type_public_compressed;
+        out->type = eckey_type_public_compressed;
         goto leave_and_exit;
     }
     if (len == CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE) {
@@ -73,7 +73,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
         if (result.tag != bcr_error_tag_noerror) {
             goto leave_and_exit;
         }
-        out->type = key_type_public_uncompressed;
+        out->type = eckey_type_public_uncompressed;
         goto leave_and_exit;
     }
     result.tag = bcr_error_tag_unhandledcase;

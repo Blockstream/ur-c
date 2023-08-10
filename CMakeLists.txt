@@ -25,6 +25,7 @@ add_library(bcr
     src/psbt.c
     src/seed.c
     src/p2pkh.c
+    src/output.c
 )
 
 target_link_libraries(bcr PUBLIC PkgConfig::TinyCBOR)

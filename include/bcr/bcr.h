@@ -29,7 +29,10 @@ typedef enum bcr_urtypes_tags {
     bcr_urtypes_tags_crypto_seed = 300,
     bcr_urtypes_tags_crypto_eckey = 306,
     bcr_urtypes_tags_crypto_psbt = 310,
+
+    bcr_urtypes_tags_crypto_psh = 400,
     bcr_urtypes_tags_crypto_p2pkh = 403,
+    bcr_urtypes_tags_crypto_p2wpkh = 404,
 } bcr_tagged_types;
 
 
@@ -61,17 +64,35 @@ typedef struct crypto_eckey {
         uint8_t public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE];
         uint8_t public_uncompressed[CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE];
     } key;
-    enum key_type {
-        uninitialized,
-        key_type_private,
-        key_type_public_compressed,
-        key_type_public_uncompressed,
+    enum eckey_type {
+        eckey_type_na,
+        eckey_type_private,
+        eckey_type_public_compressed,
+        eckey_type_public_uncompressed,
     } type;
 } crypto_eckey;
 bcr_error parse_eckey(const uint8_t *buffer, unsigned int size, crypto_eckey *out);
 
-/////////////////////// crypto-eckey
+/////////////////////// crypto-output
+///p2pkh
 typedef struct crypto_p2pkh {
-    crypto_eckey key;
+    union {
+        crypto_eckey eckey;
+    } key;
+    enum p2pkh_type {
+        p2pkh_type_na,
+        p2pkh_type_eckey,
+    } type;
+
 } crypto_p2pkh;
-bcr_error parse_p2pkh(const uint8_t *buffer, unsigned int size, crypto_p2pkh *out);
+
+typedef struct crypto_output {
+    union {
+        crypto_p2pkh p2pkh;
+    } output;
+    enum output_type {
+        output_type_na,
+        output_type_p2pkh,
+    } type;
+} crypto_output;
+bcr_error parse_output(const uint8_t *buffer, unsigned int size, crypto_output *out);
