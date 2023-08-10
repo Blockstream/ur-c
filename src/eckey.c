@@ -1,9 +1,7 @@
-#include "bcr/bcr.h"
+
 #include "internals.h"
 #include "macros.h"
 #include "utils.h"
-#include <stdint.h>
-#include <tinycbor/cbor.h>
 
 bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     out->type = uninitialized;
@@ -16,9 +14,9 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     err = cbor_value_enter_container(iter, &item);
     CHECK_CBOR_ERROR(err, result, exit);
 
-    // curve type might be omitted,if present it must be 0 = secp256k1
+    // curve field is optional,if present it must be 0 = secp256k1
     if (is_map_key(&item, 1)) {
-        ADVANCE(item, result, leave_and_exit);
+        ADVANCE(&item, result, leave_and_exit);
         int curve_type;
         err = cbor_value_get_int(&item, &curve_type);
         CHECK_CBOR_ERROR(err, result, leave_and_exit);
@@ -27,31 +25,27 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
             goto leave_and_exit;
         }
 
-        ADVANCE(item, result, leave_and_exit);
-
+        ADVANCE(&item, result, leave_and_exit);
     }
 
-    result = check_map_key(&item, 2);
-    if (result.tag != bcr_error_tag_noerror) {
-        goto leave_and_exit;
+    // private field is optional, false by default
+    bool is_private = false;
+    if (is_map_key(&item, 2)) {
+        ADVANCE(&item, result, leave_and_exit);
+
+        CHECK_IS_TYPE(&item, boolean, result, leave_and_exit)
+        err = cbor_value_get_boolean(&item, &is_private);
+        CHECK_CBOR_ERROR(err, result, leave_and_exit);
+
+        ADVANCE(&item, result, leave_and_exit);
     }
-
-    ADVANCE(item, result, leave_and_exit);
-
-    CHECK_IS_TYPE(&item, boolean, result, leave_and_exit)
-
-    bool is_private;
-    err = cbor_value_get_boolean(&item, &is_private);
-    CHECK_CBOR_ERROR(err, result, leave_and_exit);
-
-    ADVANCE(item, result, leave_and_exit);
 
     result = check_map_key(&item, 3);
     if (result.tag != bcr_error_tag_noerror) {
         goto leave_and_exit;
     }
 
-    ADVANCE(item, result, leave_and_exit);
+    ADVANCE(&item, result, leave_and_exit);
 
     if (is_private) {
         result = copy_fixed_size_byte_string(&item, (uint8_t *)&out->key.private, CRYPTO_ECKEY_PRIVATE_SIZE);
@@ -72,7 +66,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
         }
         out->type = key_type_public_compressed;
         goto leave_and_exit;
-    } 
+    }
     if (len == CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE) {
         result = copy_fixed_size_byte_string(&item, (uint8_t *)&out->key.public_uncompressed,
                                              CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE);

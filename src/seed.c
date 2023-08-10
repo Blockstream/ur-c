@@ -18,7 +18,7 @@ bcr_error internal_parse_seed(CborValue *iter, crypto_seed *out) {
         goto leave_and_exit;
     }
 
-    ADVANCE(item, result, leave_and_exit);
+    ADVANCE(&item, result, leave_and_exit);
 
     result = copy_fixed_size_byte_string(&item, out->seed, CRYPTO_SEED_SIZE);
     if (result.tag != bcr_error_tag_noerror) {
@@ -29,14 +29,14 @@ bcr_error internal_parse_seed(CborValue *iter, crypto_seed *out) {
         goto leave_and_exit;
     }
 
-    ADVANCE(item, result, leave_and_exit);
+    ADVANCE(&item, result, leave_and_exit);
 
     result = check_map_key(&item, 2);
     if (result.tag != bcr_error_tag_noerror) {
         goto leave_and_exit;
     }
 
-    ADVANCE(item, result, leave_and_exit);
+    ADVANCE(&item, result, leave_and_exit);
 
     result = check_tag(&item, 100); // TODO: check whether this is an official RFC 8949 tag or what
     if (result.tag != bcr_error_tag_noerror) {

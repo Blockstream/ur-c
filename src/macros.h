@@ -2,7 +2,7 @@
 
 #define ADVANCE(cursor, bcrerror, exit_point)                                                                          \
     {                                                                                                                  \
-        CborError err = cbor_value_advance(&cursor);                                                                   \
+        CborError err = cbor_value_advance(cursor);                                                                   \
         if (err != CborNoError) {                                                                                      \
             bcrerror.tag = bcr_error_tag_cborinternalerror;                                                            \
             bcrerror.internal.cbor = err;                                                                              \

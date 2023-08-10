@@ -56,7 +56,22 @@ void test_crypto_eckey_parse() {
 
     crypto_eckey eckey;
     bcr_error err = parse_eckey(raw, len, &eckey);
+    TEST_ASSERT_EQUAL(bcr_error_tag_noerror, err.tag);
     TEST_ASSERT_EQUAL(key_type_private, eckey.type);
+    TEST_ASSERT_EQUAL(0x8c, eckey.key.private[0]);
+    TEST_ASSERT_EQUAL(0xaa, eckey.key.private[CRYPTO_ECKEY_PRIVATE_SIZE - 1]);
+}
+
+void test_crypto_p2pkh_parse() {
+    // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md#exampletest-vector-1
+    const char *hex = "d90193d90132a103582102c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5";
+    uint8_t raw[BUFSIZE];
+    int len = h2b(hex, (uint8_t *)(&raw), BUFSIZE);
+    TEST_ASSERT_GREATER_THAN_INT(0, len);
+
+    crypto_p2pkh pkh;
+    bcr_error err = parse_p2pkh(raw, len, &pkh);
+    TEST_ASSERT_EQUAL(bcr_error_tag_noerror, err.tag);
 }
 
 
@@ -66,5 +81,6 @@ int main() {
     RUN_TEST(test_crypto_seed_parse);
     RUN_TEST(test_crypto_psbt_parse);
     RUN_TEST(test_crypto_eckey_parse);
+    RUN_TEST(test_crypto_p2pkh_parse);
     return UNITY_END();
 }
