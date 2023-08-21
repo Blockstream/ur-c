@@ -1,9 +1,13 @@
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
 #include "macros.h"
 #include "utils.h"
+
+const int cbor_flags = CborValidateBasic | CborValidateMapKeysAreUnique | CborValidateMapIsSorted | CborValidateUtf8 |
+                 CborValidateNoUndefined | CborValidateCompleteData;
 
 bcr_error check_map_key(CborValue *cursor, int expected) {
     bcr_error result = {.tag = bcr_error_tag_noerror};
@@ -39,7 +43,7 @@ bool is_map_key(CborValue *cursor, int expected) {
     return true;
 }
 
-bcr_error check_tag(CborValue *cursor, int expected_tag) {
+bcr_error check_tag(CborValue *cursor, unsigned long expected_tag) {
     bcr_error result = {.tag = bcr_error_tag_noerror};
     if (!cbor_value_is_tag(cursor)) {
         result.tag = bcr_error_tag_wrongtype;
@@ -59,7 +63,7 @@ bcr_error check_tag(CborValue *cursor, int expected_tag) {
     return result;
 }
 
-bcr_error copy_fixed_size_byte_string(CborValue *cursor, uint8_t *buffer, size_t expected) {
+bcr_error copy_fixed_size_byte_string(CborValue *cursor, size_t expected, uint8_t buffer[expected]) {
     bcr_error result = {.tag = bcr_error_tag_noerror};
     if (!cbor_value_is_byte_string(cursor)) {
         result.tag = bcr_error_tag_wrongtype;

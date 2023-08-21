@@ -16,16 +16,16 @@ else()
 endif()
 
 add_library(bcr 
-    src/bcr.c include/bcr/bcr.h
+    include/bcr/bcr.h
+    src/eckey.c include/bcr/crypto_eckey.h
+    src/hdkey.c include/bcr/crypto_hdkey.h
+    src/psbt.c include/bcr/crypto_psbt.h
+    src/seed.c include/bcr/crypto_seed.h
 
-    src/internals.h
     src/macros.h
     src/utils.c src/utils.h
-    src/eckey.c
-    src/psbt.c
-    src/seed.c
-    src/p2pkh.c
-    src/output.c
+    # src/p2pkh.c
+    # src/output.c
 )
 
 target_link_libraries(bcr PUBLIC PkgConfig::TinyCBOR)
@@ -35,6 +35,7 @@ target_include_directories(bcr PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 set_target_properties(bcr PROPERTIES C_STANDARD 11)
+target_compile_options(bcr PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 if(NOT ENABLE_TESTS)
     return()

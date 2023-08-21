@@ -2,7 +2,7 @@
 
 #include "helpers.h"
 
-size_t h2b(const char *hex, uint8_t *buffer, unsigned int size) {
+size_t h2b(const char *hex, size_t size, uint8_t buffer[size]) {
     size_t len = strlen(hex);
     if (len % 2 != 0)
         return -1;
