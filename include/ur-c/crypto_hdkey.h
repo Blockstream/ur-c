@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bcr/error.h"
+#include "ur-c/error.h"
 
 #define COININFO_COIN_TYPE_BTC 0
 
@@ -64,11 +64,20 @@ typedef struct hd_master_key {
     uint8_t chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE];
 } hd_master_key;
 
+#define CRYPTO_COININFO_TYPE_BTC 0
+#define CRYPTO_COININFO_MAINNET 0
+#define CRYPTO_COININFO_TESTNET_BTC 1
 typedef struct crypto_coininfo {
     uint32_t type;
     int network;
 } crypto_coininfo;
 
+#ifndef NAME_BUFFER_SIZE
+#define NAME_BUFFER_SIZE 32
+#endif
+#ifndef NOTE_BUFFER_SIZE
+#define NOTE_BUFFER_SIZE 128
+#endif
 typedef struct hd_derived_key {
     bool is_private;
     uint8_t keydata[CRYPTO_HDKEY_KEYDATA_SIZE];
@@ -79,6 +88,16 @@ typedef struct hd_derived_key {
     crypto_coininfo useinfo;
     bool valid_useinfo;
 
+    crypto_keypath origin;
+    bool valid_origin;
+
+    crypto_keypath children;
+    bool valid_children;
+
+    uint32_t parent_fingerprint;
+
+    char name[NAME_BUFFER_SIZE];
+    char note[NOTE_BUFFER_SIZE];
 } hd_derived_key;
 
 typedef struct crypto_hdkey {
@@ -93,4 +112,4 @@ typedef struct crypto_hdkey {
     } type;
 } crypto_hdkey;
 
-bcr_error parse_hdkey(size_t size, const uint8_t buffer[size], crypto_hdkey *out);
+urc_error parse_hdkey(size_t size, const uint8_t buffer[size], crypto_hdkey *out);

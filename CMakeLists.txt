@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.18)
 
-project(example-cbor C CXX)
+project(ur_c C CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
@@ -15,12 +15,12 @@ else()
     pkg_check_modules(TinyCBOR REQUIRED IMPORTED_TARGET)
 endif()
 
-add_library(bcr 
-    include/bcr/bcr.h
-    src/eckey.c include/bcr/crypto_eckey.h
-    src/hdkey.c include/bcr/crypto_hdkey.h
-    src/psbt.c include/bcr/crypto_psbt.h
-    src/seed.c include/bcr/crypto_seed.h
+add_library(urc 
+    include/urc/urc.h
+    src/eckey.c include/urc/crypto_eckey.h
+    src/hdkey.c include/urc/crypto_hdkey.h
+    src/psbt.c include/urc/crypto_psbt.h
+    src/seed.c include/urc/crypto_seed.h
 
     src/macros.h
     src/utils.c src/utils.h
@@ -28,14 +28,14 @@ add_library(bcr
     # src/output.c
 )
 
-target_link_libraries(bcr PUBLIC PkgConfig::TinyCBOR)
-target_include_directories(bcr PUBLIC
+target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)
+target_include_directories(urc PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include>
 )
-set_target_properties(bcr PROPERTIES C_STANDARD 11)
-target_compile_options(bcr PRIVATE -Wall -Wextra -Wpedantic -Werror)
+set_target_properties(urc PROPERTIES C_STANDARD 11)
+target_compile_options(urc PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 if(NOT ENABLE_TESTS)
     return()
@@ -53,7 +53,7 @@ add_executable(parser
 
     tests/parser.c
 )
-target_link_libraries(parser PRIVATE bcr unity)
+target_link_libraries(parser PRIVATE urc unity)
 target_include_directories(parser PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 add_test(NAME parser COMMAND parser)

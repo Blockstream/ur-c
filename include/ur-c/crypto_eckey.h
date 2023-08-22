@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "bcr/error.h"
+#include "ur-c/error.h"
 
 #define CRYPTO_ECKEY_PRIVATE_SIZE 32
 #define CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE 33
@@ -21,4 +21,4 @@ typedef struct crypto_eckey {
         eckey_type_public_uncompressed,
     } type;
 } crypto_eckey;
-bcr_error parse_eckey(size_t size, const uint8_t buffer[size], crypto_eckey *out);
+urc_error parse_eckey(size_t size, const uint8_t buffer[size], crypto_eckey *out);

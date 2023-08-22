@@ -1,28 +1,28 @@
 
 #include "tinycbor/cbor.h"
 
-#include "bcr/crypto_eckey.h"
+#include "ur-c/crypto_eckey.h"
 
 #include "macros.h"
 #include "utils.h"
 
-bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out);
+urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out);
 
-bcr_error parse_eckey(size_t size, const uint8_t buffer[size], crypto_eckey *out) {
+urc_error parse_eckey(size_t size, const uint8_t buffer[size], crypto_eckey *out) {
     CborParser parser;
     CborValue iter;
     CborError err;
     err = cbor_parser_init(buffer, size, cbor_flags, &parser, &iter);
     if (err != CborNoError) {
-        bcr_error result = {.tag = bcr_error_tag_cborinternalerror, .internal.cbor = err};
+        urc_error result = {.tag = urc_error_tag_cborinternalerror, .internal.cbor = err};
         return result;
     }
     return internal_parse_eckey(&iter, out);
 }
 
-bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
+urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     out->type = eckey_type_na;
-    bcr_error result = {.tag = bcr_error_tag_noerror};
+    urc_error result = {.tag = urc_error_tag_noerror};
 
     CHECK_IS_TYPE(iter, map, result, exit);
 
@@ -38,7 +38,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
         err = cbor_value_get_int(&item, &curve_type);
         CHECK_CBOR_ERROR(err, result, exit);
         if (curve_type != 0) {
-            result.tag = bcr_error_tag_unhandledcase;
+            result.tag = urc_error_tag_unhandledcase;
             goto exit;
         }
 
@@ -58,7 +58,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     }
 
     result = check_map_key(&item, 3);
-    if (result.tag != bcr_error_tag_noerror) {
+    if (result.tag != urc_error_tag_noerror) {
         goto exit;
     }
 
@@ -66,7 +66,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
 
     if (is_private) {
         result = copy_fixed_size_byte_string(&item, CRYPTO_ECKEY_PRIVATE_SIZE, (uint8_t *)&out->key.private);
-        if (result.tag -= bcr_error_tag_noerror) {
+        if (result.tag -= urc_error_tag_noerror) {
             goto exit;
         }
         out->type = eckey_type_private;
@@ -77,7 +77,7 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     CHECK_CBOR_ERROR(err, result, exit);
     if (len == CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE) {
         result = copy_fixed_size_byte_string(&item, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, (uint8_t *)&out->key.public_compressed);
-        if (result.tag != bcr_error_tag_noerror) {
+        if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
         out->type = eckey_type_public_compressed;
@@ -86,13 +86,13 @@ bcr_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     if (len == CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE) {
         result =
             copy_fixed_size_byte_string(&item, CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE, (uint8_t *)&out->key.public_uncompressed);
-        if (result.tag != bcr_error_tag_noerror) {
+        if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
         out->type = eckey_type_public_uncompressed;
         goto exit;
     }
-    result.tag = bcr_error_tag_unhandledcase;
+    result.tag = urc_error_tag_unhandledcase;
 
     LEAVE_CONTAINER_SAFELY(iter, &item, result, exit);
 

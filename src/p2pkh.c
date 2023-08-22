@@ -1,15 +1,15 @@
 
-#include "bcr/bcr.h"
+#include "urc/urc.h"
 #include "internals.h"
 #include "macros.h"
 #include "utils.h"
 
-bcr_error internal_parse_p2pkh(CborValue *iter, crypto_p2pkh *out) {
+urc_error internal_parse_p2pkh(CborValue *iter, crypto_p2pkh *out) {
     out->type = p2pkh_type_na;
-    bcr_error result = {.tag = bcr_error_tag_noerror};
+    urc_error result = {.tag = urc_error_tag_noerror};
 
-    result = check_tag(iter, bcr_urtypes_tags_crypto_eckey);
-    if (result.tag != bcr_error_tag_noerror) {
+    result = check_tag(iter, urc_urtypes_tags_crypto_eckey);
+    if (result.tag != urc_error_tag_noerror) {
         goto exit;
     }
 
