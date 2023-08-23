@@ -4,7 +4,7 @@ At the moment the following Uniform resources are supported:
 - [crypto-seed](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md#cryptographic-seed-crypto-seed)
 - [crypto-psbt](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt)
 - [crypto-eckey](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-008-eckey.md)
-- [crypto-eckey](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md)
+- [crypto-hdkey](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md)
 
 
 ### how to build and run tests
