@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <tinycbor/cbor.h>
 
 #include "macros.h"
 #include "utils.h"
@@ -61,6 +62,21 @@ urc_error check_tag(CborValue *cursor, unsigned long expected_tag) {
         return result;
     }
     return result;
+}
+
+bool is_tag(CborValue *cursor, unsigned long expected_tag) {
+    if (!cbor_value_is_tag(cursor)) {
+        return false;
+    }
+    CborTag tag;
+    CborError err = cbor_value_get_tag(cursor, &tag);
+    if (err != CborNoError) {
+        return false;
+    }
+    if (tag != expected_tag) {
+        return false;
+    }
+    return true;
 }
 
 urc_error copy_fixed_size_byte_string(CborValue *cursor, size_t expected, uint8_t buffer[expected]) {

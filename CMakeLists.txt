@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(ur_c C CXX)
+project(ur_c
+    VERSION 0.0.1
+    LANGUAGES C CXX
+)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
@@ -16,16 +19,18 @@ else()
 endif()
 
 add_library(urc 
-    include/urc/urc.h
-    src/eckey.c include/urc/crypto_eckey.h
-    src/hdkey.c include/urc/crypto_hdkey.h
-    src/psbt.c include/urc/crypto_psbt.h
-    src/seed.c include/urc/crypto_seed.h
+    include/ur-c/urc.h
 
+    src/account.c include/ur-c/crypto_account.h
+    src/eckey.c include/ur-c/crypto_eckey.h
+    src/hdkey.c include/ur-c/crypto_hdkey.h
+    src/output.c include/ur-c/crypto_output.h
+    src/psbt.c include/ur-c/crypto_psbt.h
+    src/seed.c include/ur-c/crypto_seed.h
+
+    src/internals.h
     src/macros.h
     src/utils.c src/utils.h
-    # src/p2pkh.c
-    # src/output.c
 )
 
 target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)

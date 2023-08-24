@@ -1,4 +1,6 @@
 
+#include "tinycbor/cbor.h"
+
 #include "ur-c/crypto_seed.h"
 
 #include "macros.h"

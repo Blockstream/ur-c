@@ -5,7 +5,7 @@
 
 #include "ur-c/error.h"
 
-typedef struct crypto_psbt {
+typedef struct {
     uint8_t *buffer;
     size_t buffer_size;
     size_t psbt_len;

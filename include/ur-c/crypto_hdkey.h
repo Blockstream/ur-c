@@ -10,36 +10,34 @@
 #define COININFO_NETWORK_MAINNET 0
 #define COININFO_NETWORK_TESTNET 1
 
-
-typedef struct child_index_component {
+typedef struct {
     uint32_t index;
     bool is_hardened;
 } child_index_component;
 
-typedef struct child_range_component {
+typedef struct {
     uint32_t low;
     uint32_t high;
     bool is_hardened;
 } child_range_component;
 
-typedef struct child_wildcard_component {
+typedef struct {
     bool is_hardened;
-}child_wildcard_component;
+} child_wildcard_component;
 
-
-typedef struct child_pair_component {
+typedef struct {
     child_index_component internal;
     child_index_component external;
 } child_pair_component;
 
-typedef struct path_component {
+typedef struct {
     union {
         child_index_component index;
         child_range_component range;
         child_wildcard_component wildcard;
         child_pair_component pair;
     } component;
-    enum path_component_type {
+    enum {
         path_component_type_na,
         path_component_type_index,
         path_component_type_range,
@@ -49,7 +47,7 @@ typedef struct path_component {
 } path_component;
 
 #define CRYPTO_KEYPATH_MAX_COMPONENTS 8
-typedef struct crypto_keypath {
+typedef struct {
     path_component components[CRYPTO_KEYPATH_MAX_COMPONENTS];
     size_t components_count;
     uint32_t source_fingerprint;
@@ -58,7 +56,7 @@ typedef struct crypto_keypath {
 
 #define CRYPTO_HDKEY_KEYDATA_SIZE 33
 #define CRYPTO_HDKEY_CHAINCODE_SIZE 32
-typedef struct hd_master_key {
+typedef struct {
     bool is_master;
     uint8_t keydata[CRYPTO_HDKEY_KEYDATA_SIZE];
     uint8_t chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE];
@@ -67,7 +65,7 @@ typedef struct hd_master_key {
 #define CRYPTO_COININFO_TYPE_BTC 0
 #define CRYPTO_COININFO_MAINNET 0
 #define CRYPTO_COININFO_TESTNET_BTC 1
-typedef struct crypto_coininfo {
+typedef struct {
     uint32_t type;
     int network;
 } crypto_coininfo;
@@ -78,7 +76,7 @@ typedef struct crypto_coininfo {
 #ifndef NOTE_BUFFER_SIZE
 #define NOTE_BUFFER_SIZE 128
 #endif
-typedef struct hd_derived_key {
+typedef struct {
     bool is_private;
     uint8_t keydata[CRYPTO_HDKEY_KEYDATA_SIZE];
 
@@ -100,12 +98,12 @@ typedef struct hd_derived_key {
     char note[NOTE_BUFFER_SIZE];
 } hd_derived_key;
 
-typedef struct crypto_hdkey {
+typedef struct {
     union {
         hd_master_key master;
         hd_derived_key derived;
     } key;
-    enum hdkey_type {
+    enum {
         hdkey_type_na,
         hdkey_type_master,
         hdkey_type_derived,

@@ -4,8 +4,8 @@
 
 #include "macros.h"
 #include "utils.h"
+#include "internals.h"
 
-urc_error internal_parse_hdkey(CborValue *iter, crypto_hdkey *out);
 urc_error internal_parse_masterkey(CborValue *iter, hd_master_key *out);
 urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out);
 urc_error internal_parse_coininfo(CborValue *iter, crypto_coininfo *out);
@@ -25,8 +25,8 @@ urc_error parse_hdkey(size_t size, const uint8_t buffer[size], crypto_hdkey *out
 }
 
 urc_error internal_parse_hdkey(CborValue *iter, crypto_hdkey *out) {
-    out->type = hdkey_type_na;
     urc_error result = {.tag = urc_error_tag_noerror};
+    out->type = hdkey_type_na;
 
     result = internal_parse_masterkey(iter, &out->key.master);
     // NOTE: invered than expected logic
@@ -100,6 +100,7 @@ exit:
 
 urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
     urc_error result = {.tag = urc_error_tag_noerror};
+
     CHECK_IS_TYPE(iter, map, result, exit);
     CborValue map_item;
     CborError err = cbor_value_enter_container(iter, &map_item);
@@ -204,6 +205,7 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
             CHECK_IS_TYPE(&map_item, unsigned_integer, result, exit);
             err = cbor_value_get_int(&map_item, (int *)&out->parent_fingerprint);
             CHECK_CBOR_ERROR(err, result, exit);
+            ADVANCE(&map_item, result, exit);
         }
     }
     {
@@ -220,6 +222,7 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
             } else {
                 CHECK_CBOR_ERROR(err, result, exit);
             }
+            ADVANCE(&map_item, result, exit);
         }
     }
     {
@@ -236,8 +239,10 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
             } else {
                 CHECK_CBOR_ERROR(err, result, exit);
             }
+            ADVANCE(&map_item, result, exit);
         }
     }
+    LEAVE_CONTAINER_SAFELY(iter, &map_item, result, exit);
 
 exit:
     return result;
@@ -373,7 +378,6 @@ urc_error internal_parse_path_component(CborValue *iter, path_component *out) {
         goto exit;
     }
 
-    // WARNING: untested territory
     CHECK_IS_TYPE(iter, array, result, exit);
     size_t len;
     err = cbor_value_get_array_length(iter, &len);
@@ -388,6 +392,7 @@ urc_error internal_parse_path_component(CborValue *iter, path_component *out) {
         CHECK_CBOR_ERROR(err, result, exit);
 
         out->type = path_component_type_wildcard;
+        ADVANCE(iter, result, exit);
         goto exit;
     }
 

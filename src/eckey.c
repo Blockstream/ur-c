@@ -5,8 +5,8 @@
 
 #include "macros.h"
 #include "utils.h"
+#include "internals.h"
 
-urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out);
 
 urc_error parse_eckey(size_t size, const uint8_t buffer[size], crypto_eckey *out) {
     CborParser parser;
@@ -26,76 +26,75 @@ urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
 
     CHECK_IS_TYPE(iter, map, result, exit);
 
-    CborValue item;
+    CborValue map_item;
     CborError err;
-    err = cbor_value_enter_container(iter, &item);
+    err = cbor_value_enter_container(iter, &map_item);
     CHECK_CBOR_ERROR(err, result, exit);
 
     // curve field is optional,if present it must be 0 = secp256k1
-    if (is_map_key(&item, 1)) {
-        ADVANCE(&item, result, exit);
+    if (is_map_key(&map_item, 1)) {
+        ADVANCE(&map_item, result, exit);
         int curve_type;
-        err = cbor_value_get_int(&item, &curve_type);
+        err = cbor_value_get_int(&map_item, &curve_type);
         CHECK_CBOR_ERROR(err, result, exit);
         if (curve_type != 0) {
             result.tag = urc_error_tag_unhandledcase;
             goto exit;
         }
-
-        ADVANCE(&item, result, exit);
+        ADVANCE(&map_item, result, exit);
     }
 
     // private field is optional, false by default
     bool is_private = false;
-    if (is_map_key(&item, 2)) {
-        ADVANCE(&item, result, exit);
+    if (is_map_key(&map_item, 2)) {
+        ADVANCE(&map_item, result, exit);
 
-        CHECK_IS_TYPE(&item, boolean, result, exit)
-        err = cbor_value_get_boolean(&item, &is_private);
+        CHECK_IS_TYPE(&map_item, boolean, result, exit)
+        err = cbor_value_get_boolean(&map_item, &is_private);
         CHECK_CBOR_ERROR(err, result, exit);
 
-        ADVANCE(&item, result, exit);
+        ADVANCE(&map_item, result, exit);
     }
 
-    result = check_map_key(&item, 3);
+    result = check_map_key(&map_item, 3);
     if (result.tag != urc_error_tag_noerror) {
         goto exit;
     }
-
-    ADVANCE(&item, result, exit);
+    ADVANCE(&map_item, result, exit);
 
     if (is_private) {
-        result = copy_fixed_size_byte_string(&item, CRYPTO_ECKEY_PRIVATE_SIZE, (uint8_t *)&out->key.private);
-        if (result.tag -= urc_error_tag_noerror) {
+        result = copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PRIVATE_SIZE, (uint8_t *)&out->key.private);
+        if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
         out->type = eckey_type_private;
-        goto exit;
+        goto leave_and_exit;
     }
     size_t len;
-    err = cbor_value_get_string_length(&item, &len);
+    err = cbor_value_get_string_length(&map_item, &len);
     CHECK_CBOR_ERROR(err, result, exit);
     if (len == CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE) {
-        result = copy_fixed_size_byte_string(&item, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, (uint8_t *)&out->key.public_compressed);
+        result = copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, (uint8_t *)&out->key.public_compressed);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
         out->type = eckey_type_public_compressed;
-        goto exit;
+        goto leave_and_exit;
     }
     if (len == CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE) {
         result =
-            copy_fixed_size_byte_string(&item, CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE, (uint8_t *)&out->key.public_uncompressed);
+            copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE, (uint8_t *)&out->key.public_uncompressed);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
         out->type = eckey_type_public_uncompressed;
-        goto exit;
+        goto leave_and_exit;
     }
     result.tag = urc_error_tag_unhandledcase;
 
-    LEAVE_CONTAINER_SAFELY(iter, &item, result, exit);
-
+leave_and_exit:
+    ADVANCE(&map_item, result, exit);
+    LEAVE_CONTAINER_SAFELY(iter, &map_item, result, exit);
 exit:
     return result;
 }

@@ -5,7 +5,7 @@
 #include "ur-c/error.h"
 
 #define CRYPTO_SEED_SIZE 16
-typedef struct crypto_seed {
+typedef struct {
     uint8_t seed[CRYPTO_SEED_SIZE];
     uint64_t creation_date;
 
