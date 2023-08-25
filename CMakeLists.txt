@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 
 project(ur_c
-    VERSION 0.0.1
+    VERSION 0.0.2
     LANGUAGES C CXX
 )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -32,6 +32,17 @@ add_library(urc
     src/macros.h
     src/utils.c src/utils.h
 )
+set(urc_headers
+    ${CMAKE_SOURCE_DIR}/include/ur-c/urc.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/error.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/tags.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_account.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_eckey.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_hdkey.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_output.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_psbt.h
+    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_seed.h
+)
 
 target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)
 target_include_directories(urc PUBLIC
@@ -39,8 +50,41 @@ target_include_directories(urc PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include>
 )
-set_target_properties(urc PROPERTIES C_STANDARD 11)
+set_target_properties(urc PROPERTIES
+    PUBLIC_HEADER "${urc_headers}"
+    C_STANDARD 11
+)
 target_compile_options(urc PRIVATE -Wall -Wextra -Wpedantic -Werror)
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+set(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+configure_package_config_file(cmake/urc-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/urc-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ur-c
+    PATH_VARS INSTALL_LIBDIR
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/urc-config-version.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/urc-config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/urc-config-version.cmake
+              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake )
+install(TARGETS urc
+    EXPORT "urc-target"
+    RUNTIME EXCLUDE_FROM_ALL
+    OBJECTS EXCLUDE_FROM_ALL
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ur-c
+)
+install(EXPORT "urc-target"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+    NAMESPACE ${PROJECT_NAME}::
+    FILE "urc-targets.cmake"
+)
 
 if(NOT ENABLE_TESTS)
     return()
