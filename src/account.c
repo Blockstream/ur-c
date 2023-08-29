@@ -1,9 +1,10 @@
 
 #include <stdlib.h>
-#include <tinycbor/cbor.h>
 
-#include "ur-c/crypto_account.h"
-#include "ur-c/tags.h"
+#include "cbor.h"
+
+#include "urc/crypto_account.h"
+#include "urc/tags.h"
 
 #include "internals.h"
 #include "macros.h"
@@ -11,7 +12,7 @@
 
 urc_error internal_parse_account(CborValue *iter, crypto_account *out);
 
-urc_error parse_account(size_t size, const uint8_t buffer[size], crypto_account *out) {
+urc_error parse_account(size_t size, const uint8_t *buffer, crypto_account *out) {
     CborParser parser;
     CborValue iter;
     CborError err;

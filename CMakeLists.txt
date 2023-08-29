@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 
-project(ur_c
+project(urc
     VERSION 0.0.2
     LANGUAGES C CXX
 )
@@ -15,33 +15,33 @@ if (FETCH_DEPS)
     fetch_tinycbor()
 else()
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(TinyCBOR REQUIRED IMPORTED_TARGET)
+    pkg_check_modules(TinyCBOR REQUIRED IMPORTED_TARGET tinycbor)
 endif()
 
 add_library(urc 
-    include/ur-c/urc.h
+    include/urc/urc.h
 
-    src/account.c include/ur-c/crypto_account.h
-    src/eckey.c include/ur-c/crypto_eckey.h
-    src/hdkey.c include/ur-c/crypto_hdkey.h
-    src/output.c include/ur-c/crypto_output.h
-    src/psbt.c include/ur-c/crypto_psbt.h
-    src/seed.c include/ur-c/crypto_seed.h
+    src/account.c include/urc/crypto_account.h
+    src/eckey.c include/urc/crypto_eckey.h
+    src/hdkey.c include/urc/crypto_hdkey.h
+    src/output.c include/urc/crypto_output.h
+    src/psbt.c include/urc/crypto_psbt.h
+    src/seed.c include/urc/crypto_seed.h
 
     src/internals.h
     src/macros.h
     src/utils.c src/utils.h
 )
 set(urc_headers
-    ${CMAKE_SOURCE_DIR}/include/ur-c/urc.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/error.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/tags.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_account.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_eckey.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_hdkey.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_output.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_psbt.h
-    ${CMAKE_SOURCE_DIR}/include/ur-c/crypto_seed.h
+    ${CMAKE_SOURCE_DIR}/include/urc/urc.h
+    ${CMAKE_SOURCE_DIR}/include/urc/error.h
+    ${CMAKE_SOURCE_DIR}/include/urc/tags.h
+    ${CMAKE_SOURCE_DIR}/include/urc/crypto_account.h
+    ${CMAKE_SOURCE_DIR}/include/urc/crypto_eckey.h
+    ${CMAKE_SOURCE_DIR}/include/urc/crypto_hdkey.h
+    ${CMAKE_SOURCE_DIR}/include/urc/crypto_output.h
+    ${CMAKE_SOURCE_DIR}/include/urc/crypto_psbt.h
+    ${CMAKE_SOURCE_DIR}/include/urc/crypto_seed.h
 )
 
 target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)
@@ -61,7 +61,7 @@ include(CMakePackageConfigHelpers)
 set(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
 configure_package_config_file(cmake/urc-config.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/urc-config.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ur-c
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/urc
     PATH_VARS INSTALL_LIBDIR
 )
 write_basic_package_version_file(
@@ -71,17 +71,17 @@ write_basic_package_version_file(
 )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/urc-config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/urc-config-version.cmake
-              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake )
+              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/urc )
 install(TARGETS urc
     EXPORT "urc-target"
     RUNTIME EXCLUDE_FROM_ALL
     OBJECTS EXCLUDE_FROM_ALL
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ur-c
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/urc
 )
 install(EXPORT "urc-target"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/urc
     NAMESPACE ${PROJECT_NAME}::
     FILE "urc-targets.cmake"
 )

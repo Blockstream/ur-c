@@ -13,11 +13,12 @@ macro(fetch_tinycbor)
     )
     ExternalProject_Get_Property(TinyCBOR-external INSTALL_DIR INSTALL_DIR)
     add_library(PkgConfig::TinyCBOR STATIC IMPORTED)
-    file(MAKE_DIRECTORY ${INSTALL_DIR}/include) #otherwise cmake complains
+    file(MAKE_DIRECTORY ${INSTALL_DIR}/include/tinycbor) #otherwise cmake complains
     set_target_properties(PkgConfig::TinyCBOR
     PROPERTIES
         IMPORTED_LOCATION ${INSTALL_DIR}/lib/libtinycbor.a
-        INTERFACE_INCLUDE_DIRECTORIES ${INSTALL_DIR}/include
+        # ugly but needed to mimick the pkg-config file
+        INTERFACE_INCLUDE_DIRECTORIES ${INSTALL_DIR}/include/tinycbor
     )
     add_dependencies(PkgConfig::TinyCBOR TinyCBOR-external)
 endmacro()

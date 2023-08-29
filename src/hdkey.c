@@ -1,10 +1,17 @@
 
-#include "ur-c/crypto_hdkey.h"
-#include "ur-c/tags.h"
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
 
+
+#include "urc/crypto_hdkey.h"
+#include "urc/tags.h"
+
+#include "internals.h"
 #include "macros.h"
 #include "utils.h"
-#include "internals.h"
 
 urc_error internal_parse_masterkey(CborValue *iter, hd_master_key *out);
 urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out);
@@ -12,7 +19,7 @@ urc_error internal_parse_coininfo(CborValue *iter, crypto_coininfo *out);
 urc_error internal_parse_keypath(CborValue *iter, crypto_keypath *out);
 urc_error internal_parse_path_component(CborValue *iter, path_component *out);
 
-urc_error parse_hdkey(size_t size, const uint8_t buffer[size], crypto_hdkey *out) {
+urc_error parse_hdkey(size_t size, const uint8_t *buffer, crypto_hdkey *out) {
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -144,7 +151,8 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
         }
     }
     {
-        out->valid_useinfo = false;
+        out->useinfo.network = CRYPTO_COININFO_MAINNET;
+        out->useinfo.type = CRYPTO_COININFO_TYPE_BTC;
         if (is_map_key(&map_item, 5)) {
             ADVANCE(&map_item, result, exit);
 
@@ -158,11 +166,12 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
             if (result.tag != urc_error_tag_noerror) {
                 goto exit;
             }
-            out->valid_useinfo = true;
         }
     }
     {
-        out->valid_origin = false;
+        out->origin.components_count = 0;
+        out->origin.depth = 0;
+        out->origin.source_fingerprint = 0;
         if (is_map_key(&map_item, 6)) {
             ADVANCE(&map_item, result, exit);
 
@@ -176,11 +185,12 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
             if (result.tag != urc_error_tag_noerror) {
                 goto exit;
             }
-            out->valid_origin = true;
         }
     }
     {
-        out->valid_children = false;
+        out->children.components_count = 0;
+        out->children.depth = 0;
+        out->children.source_fingerprint = 0;
         if (is_map_key(&map_item, 7)) {
             ADVANCE(&map_item, result, exit);
 
@@ -194,7 +204,6 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
             if (result.tag != urc_error_tag_noerror) {
                 goto exit;
             }
-            out->valid_children = true;
         }
     }
     {
@@ -313,7 +322,7 @@ urc_error internal_parse_keypath(CborValue *iter, crypto_keypath *out) {
         err = cbor_value_enter_container(&map_item, &comp_item);
         CHECK_CBOR_ERROR(err, result, exit);
         int idx = 0;
-        while(!cbor_value_at_end(&comp_item) && idx < CRYPTO_KEYPATH_MAX_COMPONENTS) {
+        while (!cbor_value_at_end(&comp_item) && idx < CRYPTO_KEYPATH_MAX_COMPONENTS) {
             result = internal_parse_path_component(&comp_item, &out->components[idx++]);
             if (result.tag != urc_error_tag_noerror) {
                 goto exit;
@@ -487,4 +496,216 @@ urc_error internal_parse_pair_component(CborValue *iter, child_pair_component *o
 
 exit:
     return result;
+}
+
+bool hdkey2bip32(const crypto_hdkey *hdkey, uint8_t out[78]) {
+    size_t cursor = 0;
+
+    uint32_t *version = (uint32_t *)&out[cursor]; // 0 - 3
+    cursor += sizeof(uint32_t);
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        *version = htonl(0x0488ADE4);
+        break;
+    case hdkey_type_derived:
+        switch (hdkey->key.derived.useinfo.network) {
+        case CRYPTO_COININFO_MAINNET:
+            if (hdkey->key.derived.is_private) {
+                *version = htonl(0x0488ADE4);
+            } else {
+                *version = htonl(0x0488B21E);
+            }
+            break;
+        case CRYPTO_COININFO_TESTNET:
+            if (hdkey->key.derived.is_private) {
+                *version = htonl(0x04358394);
+            } else {
+                *version = htonl(0x043587CF);
+            }
+            break;
+        default:
+            return false;
+        }
+        break;
+    default:
+        return false;
+    }
+
+    uint8_t *depth = (uint8_t *)&out[cursor]; // 4
+    cursor += sizeof(uint8_t);
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        *depth = 0x00;
+        break;
+    case hdkey_type_derived:
+        *depth = hdkey->key.derived.origin.components_count;
+        for (size_t idx = 0; idx < hdkey->key.derived.children.components_count; idx++) {
+            if (hdkey->key.derived.children.components[idx].type == path_component_type_index) {
+                *depth += 1;
+            }
+        }
+        break;
+    default:
+        return false;
+    }
+
+    uint32_t *parent_fingerprint = (uint32_t *)&out[cursor]; // 5 - 8
+    cursor += sizeof(uint32_t);
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        *parent_fingerprint = 0;
+        break;
+    case hdkey_type_derived:
+        *parent_fingerprint = htonl(hdkey->key.derived.parent_fingerprint);
+        break;
+    default:
+        return false;
+    }
+
+    uint32_t *child_number = (uint32_t *)&out[cursor]; // 9 - 12
+    cursor += sizeof(uint32_t);
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        *child_number = 0;
+        break;
+    case hdkey_type_derived:
+        if (hdkey->key.derived.origin.components_count == 0) {
+            *child_number = 0;
+        } else {
+            const path_component *last_origincomponent =
+                &hdkey->key.derived.origin.components[hdkey->key.derived.origin.components_count - 1];
+            switch (last_origincomponent->type) {
+            case path_component_type_index:
+                *child_number = htonl(last_origincomponent->component.index.index +
+                                      0x80000000 * last_origincomponent->component.index.is_hardened);
+                break;
+            default:
+                return false;
+            }
+        }
+        if (hdkey->key.derived.children.components_count == 0) {
+            break;
+        }
+        const path_component *last_childcomponent =
+            &hdkey->key.derived.children.components[hdkey->key.derived.children.components_count - 1];
+        switch (last_childcomponent->type) {
+        case path_component_type_wildcard:
+            *child_number = htonl(0xfffffffe);
+            break;
+        default:
+            return false;
+        }
+        break;
+    default:
+        return false;
+    }
+
+    uint8_t(*chain_code)[CRYPTO_HDKEY_CHAINCODE_SIZE] = (uint8_t(*)[CRYPTO_HDKEY_CHAINCODE_SIZE]) & out[cursor]; // 13 - 44
+    cursor += CRYPTO_HDKEY_CHAINCODE_SIZE;
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        memcpy(chain_code, hdkey->key.master.chaincode, CRYPTO_HDKEY_CHAINCODE_SIZE);
+        break;
+    case hdkey_type_derived:
+        memcpy(chain_code, hdkey->key.derived.chaincode, CRYPTO_HDKEY_CHAINCODE_SIZE);
+        break;
+    default:
+        return -1;
+    }
+
+    uint8_t(*key_data)[CRYPTO_HDKEY_KEYDATA_SIZE] = (uint8_t(*)[CRYPTO_HDKEY_KEYDATA_SIZE]) & out[cursor]; // 45 - 77
+    cursor += CRYPTO_HDKEY_KEYDATA_SIZE;
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        memcpy(key_data, hdkey->key.master.keydata, CRYPTO_HDKEY_KEYDATA_SIZE);
+        break;
+    case hdkey_type_derived:
+        memcpy(key_data, hdkey->key.derived.keydata, CRYPTO_HDKEY_KEYDATA_SIZE);
+        break;
+    default:
+        return -1;
+    }
+
+    return true;
+}
+
+int hdkey2keypathstr(const crypto_hdkey *hdkey, size_t size, char *out) {
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        return 0;
+    case hdkey_type_na:
+        return -2;
+    default:
+        break;
+    }
+
+    int len = 0;
+    uint32_t fpr = hdkey->key.derived.origin.source_fingerprint;
+    if (fpr == 0) {
+        fpr = hdkey->key.derived.parent_fingerprint;
+    }
+    len += snprintf(out, size, "[%x", fpr);
+    if (len < 0 || (size_t)len >= size) {
+        return -1;
+    }
+    for (size_t idx = 0; idx < hdkey->key.derived.origin.components_count; idx++) {
+        const path_component *comp = &hdkey->key.derived.origin.components[idx];
+        switch (comp->type) {
+        case path_component_type_index:
+            if (comp->component.index.is_hardened) {
+                len += snprintf(&out[len], size - len, "/%d'", comp->component.index.index);
+            } else {
+                len += snprintf(&out[len], size - len, "/%d", comp->component.index.index);
+            }
+            break;
+        default:
+            return -2;
+        }
+        if (len < 0 || (size_t)len >= size) {
+            return -1;
+        }
+    }
+    len += snprintf(&out[len], size - len, "]");
+    if (len < 0 || (size_t)len >= size) {
+        return -1;
+    }
+    return len;
+}
+
+int hdkeytrail(const crypto_hdkey *hdkey, size_t size, char *out) {
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        return 0;
+    case hdkey_type_na:
+        return -2;
+    default:
+        break;
+    }
+
+    int len = 0;
+    for (size_t idx = 0; idx < hdkey->key.derived.children.components_count; idx++) {
+        const path_component *comp = &hdkey->key.derived.children.components[idx];
+        switch (comp->type) {
+        case path_component_type_index:
+            if (comp->component.index.is_hardened) {
+                len += snprintf(&out[len], size - len, "/%d'", comp->component.index.index);
+            } else {
+                len += snprintf(&out[len], size - len, "/%d", comp->component.index.index);
+            }
+            break;
+        case path_component_type_wildcard:
+            len += snprintf(&out[len], size - len, "/*");
+            break;
+        default:
+            return -2;
+        }
+        if (len < 0 || (size_t)len >= size) {
+            return -1;
+        }
+    }
+
+    if (len < 0 || (size_t)len >= size) {
+        return -1;
+    }
+    return len;
 }

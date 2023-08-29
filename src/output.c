@@ -1,9 +1,9 @@
 
-#include "tinycbor/cbor.h"
+#include "cbor.h"
 
-#include "ur-c/crypto_output.h"
-#include "ur-c/error.h"
-#include "ur-c/tags.h"
+#include "urc/crypto_output.h"
+#include "urc/error.h"
+#include "urc/tags.h"
 
 #include "internals.h"
 #include "macros.h"
@@ -11,7 +11,7 @@
 
 urc_error internal_parse_keyexp(CborValue *iter, output_keyexp *out);
 
-urc_error parse_output(size_t size, const uint8_t buffer[size], crypto_output *out) {
+urc_error parse_output(size_t size, const uint8_t *buffer, crypto_output *out) {
     CborParser parser;
     CborValue iter;
     CborError err;

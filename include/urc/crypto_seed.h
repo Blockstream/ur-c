@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "ur-c/error.h"
+#include "urc/error.h"
 
 #define CRYPTO_SEED_SIZE 16
 typedef struct {
@@ -10,4 +10,5 @@ typedef struct {
     uint64_t creation_date;
 
 } crypto_seed;
-urc_error parse_seed(size_t size, const uint8_t buffer[size], crypto_seed *out);
+
+urc_error parse_seed(size_t size, const uint8_t *buffer, crypto_seed *out);

@@ -1,11 +1,12 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
-#include "ur-c/crypto_eckey.h"
-#include "ur-c/crypto_hdkey.h"
-#include "ur-c/error.h"
+#include "urc/crypto_eckey.h"
+#include "urc/crypto_hdkey.h"
+#include "urc/error.h"
 
 typedef struct {
     enum {
@@ -42,4 +43,5 @@ typedef struct {
         output_type_rawscript, // raw field
     } type;
 } crypto_output;
-urc_error parse_output(size_t size, const uint8_t buffer[size], crypto_output *out);
+
+urc_error parse_output(size_t size, const uint8_t *buffer, crypto_output *out);

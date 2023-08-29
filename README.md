@@ -5,6 +5,8 @@ At the moment the following Uniform resources are supported:
 - [crypto-psbt](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt)
 - [crypto-eckey](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-008-eckey.md)
 - [crypto-hdkey](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-007-hdkey.md)
+- [crypto-output](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md) with the exception of variants: `combo`, `multisig`, `sorted-multisig`, `address`, `taproot` 
+- [crypto-account](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md)
 
 
 ### how to build and run tests

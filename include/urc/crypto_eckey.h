@@ -1,16 +1,17 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 
-#include "ur-c/error.h"
+#include "urc/error.h"
 
 #define CRYPTO_ECKEY_PRIVATE_SIZE 32
 #define CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE 33
 #define CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE 64
 typedef struct {
     union {
-        uint8_t private[CRYPTO_ECKEY_PRIVATE_SIZE];
+        uint8_t prvate[CRYPTO_ECKEY_PRIVATE_SIZE];
         uint8_t public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE];
         uint8_t public_uncompressed[CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE];
     } key;
@@ -21,4 +22,5 @@ typedef struct {
         eckey_type_public_uncompressed,
     } type;
 } crypto_eckey;
-urc_error parse_eckey(size_t size, const uint8_t buffer[size], crypto_eckey *out);
+
+urc_error parse_eckey(size_t size, const uint8_t *buffer, crypto_eckey *out);

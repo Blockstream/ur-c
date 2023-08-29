@@ -1,14 +1,14 @@
 
-#include "tinycbor/cbor.h"
+#include "cbor.h"
 
-#include "ur-c/crypto_eckey.h"
+#include "urc/crypto_eckey.h"
 
 #include "macros.h"
 #include "utils.h"
 #include "internals.h"
 
 
-urc_error parse_eckey(size_t size, const uint8_t buffer[size], crypto_eckey *out) {
+urc_error parse_eckey(size_t size, const uint8_t *buffer, crypto_eckey *out) {
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -63,7 +63,7 @@ urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     ADVANCE(&map_item, result, exit);
 
     if (is_private) {
-        result = copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PRIVATE_SIZE, (uint8_t *)&out->key.private);
+        result = copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PRIVATE_SIZE, (uint8_t *)&out->key.prvate);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }

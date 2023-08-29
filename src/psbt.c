@@ -1,12 +1,12 @@
 
-#include "ur-c/crypto_psbt.h"
+#include "urc/crypto_psbt.h"
 
 #include "macros.h"
 #include "utils.h"
 
 urc_error internal_parse_psbt(CborValue *iter, crypto_psbt *out);
 
-urc_error parse_psbt(size_t size, const uint8_t buffer[size], crypto_psbt *out) {
+urc_error parse_psbt(size_t size, const uint8_t *buffer, crypto_psbt *out) {
     CborParser parser;
     CborValue iter;
     CborError err;

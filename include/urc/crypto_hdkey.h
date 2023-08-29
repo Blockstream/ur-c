@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "ur-c/error.h"
+#include "urc/error.h"
 
 #define COININFO_COIN_TYPE_BTC 0
 
@@ -46,7 +46,7 @@ typedef struct {
     } type;
 } path_component;
 
-#define CRYPTO_KEYPATH_MAX_COMPONENTS 8
+#define CRYPTO_KEYPATH_MAX_COMPONENTS 5
 typedef struct {
     path_component components[CRYPTO_KEYPATH_MAX_COMPONENTS];
     size_t components_count;
@@ -64,7 +64,7 @@ typedef struct {
 
 #define CRYPTO_COININFO_TYPE_BTC 0
 #define CRYPTO_COININFO_MAINNET 0
-#define CRYPTO_COININFO_TESTNET_BTC 1
+#define CRYPTO_COININFO_TESTNET 1
 typedef struct {
     uint32_t type;
     int network;
@@ -84,14 +84,8 @@ typedef struct {
     bool valid_chaincode;
 
     crypto_coininfo useinfo;
-    bool valid_useinfo;
-
     crypto_keypath origin;
-    bool valid_origin;
-
     crypto_keypath children;
-    bool valid_children;
-
     uint32_t parent_fingerprint;
 
     char name[NAME_BUFFER_SIZE];
@@ -110,4 +104,9 @@ typedef struct {
     } type;
 } crypto_hdkey;
 
-urc_error parse_hdkey(size_t size, const uint8_t buffer[size], crypto_hdkey *out);
+urc_error parse_hdkey(size_t size, const uint8_t *buffer, crypto_hdkey *out);
+bool hdkey2bip32(const crypto_hdkey *hdkey, uint8_t out[78]);
+// -1 --> out of memory
+// -2 --> internal error / invalid hdkey
+int hdkey2keypathstr(const crypto_hdkey *hdkey, size_t size, char *out);
+int hdkeytrail(const crypto_hdkey *hdkey, size_t size, char *out);

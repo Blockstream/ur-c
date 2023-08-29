@@ -1,11 +1,11 @@
 
 #include "unity.h"
 
-#include "ur-c/crypto_account.h"
-#include "ur-c/crypto_hdkey.h"
-#include "ur-c/crypto_output.h"
-#include "ur-c/error.h"
-#include "ur-c/urc.h"
+#include "urc/crypto_account.h"
+#include "urc/crypto_hdkey.h"
+#include "urc/crypto_output.h"
+#include "urc/error.h"
+#include "urc/urc.h"
 
 #include "helpers.h"
 
@@ -61,8 +61,8 @@ void test_crypto_eckey_parse() {
     urc_error err = parse_eckey(len, raw, &eckey);
     TEST_ASSERT_EQUAL(urc_error_tag_noerror, err.tag);
     TEST_ASSERT_EQUAL(eckey_type_private, eckey.type);
-    TEST_ASSERT_EQUAL_HEX(0x8c, eckey.key.private[0]);
-    TEST_ASSERT_EQUAL_HEX(0xaa, eckey.key.private[CRYPTO_ECKEY_PRIVATE_SIZE - 1]);
+    TEST_ASSERT_EQUAL_HEX(0x8c, eckey.key.prvate[0]);
+    TEST_ASSERT_EQUAL_HEX(0xaa, eckey.key.prvate[CRYPTO_ECKEY_PRIVATE_SIZE - 1]);
 }
 
 void test_crypto_hdkey_parse_1() {
@@ -81,6 +81,26 @@ void test_crypto_hdkey_parse_1() {
     TEST_ASSERT_EQUAL_HEX(0x35, hdkey.key.master.keydata[CRYPTO_HDKEY_KEYDATA_SIZE - 1]);
     TEST_ASSERT_EQUAL_HEX(0x87, hdkey.key.master.chaincode[0]);
     TEST_ASSERT_EQUAL_HEX(0x08, hdkey.key.master.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
+
+    uint8_t bip32[78];
+    bool ok = hdkey2bip32(&hdkey, bip32);
+    TEST_ASSERT_TRUE(ok);
+    uint8_t expected[78] = {0x04, 0x88, 0xad, 0xe4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x87, 0x3d, 0xff,
+                            0x81, 0xc0, 0x2f, 0x52, 0x56, 0x23, 0xfd, 0x1f, 0xe5, 0x16, 0x7e, 0xac, 0x3a, 0x55, 0xa0, 0x49,
+                            0xde, 0x3d, 0x31, 0x4b, 0xb4, 0x2e, 0xe2, 0x27, 0xff, 0xed, 0x37, 0xd5, 0x08, 0x00, 0xe8, 0xf3,
+                            0x2e, 0x72, 0x3d, 0xec, 0xf4, 0x05, 0x1a, 0xef, 0xac, 0x8e, 0x2c, 0x93, 0xc9, 0xc5, 0xb2, 0x14,
+                            0x31, 0x38, 0x17, 0xcd, 0xb0, 0x1a, 0x14, 0x94, 0xb9, 0x17, 0xc8, 0x43, 0x6b, 0x35};
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+    {
+        char keypath[BUFSIZE];
+        int len = hdkey2keypathstr(&hdkey, BUFSIZE, (char *)&keypath);
+        TEST_ASSERT_EQUAL(0, len);
+    }
+    {
+        char trailing[BUFSIZE];
+        int len = hdkeytrail(&hdkey, BUFSIZE, (char *)&trailing);
+        TEST_ASSERT_EQUAL(0, len);
+    }
 }
 
 void test_crypto_hdkey_parse_2() {
@@ -105,11 +125,9 @@ void test_crypto_hdkey_parse_2() {
     TEST_ASSERT_EQUAL_HEX(0xce, hdkey.key.derived.chaincode[0]);
     TEST_ASSERT_EQUAL_HEX(0x85, hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
 
-    TEST_ASSERT_TRUE(hdkey.key.derived.valid_useinfo);
     TEST_ASSERT_EQUAL(CRYPTO_COININFO_TYPE_BTC, hdkey.key.derived.useinfo.type);
-    TEST_ASSERT_EQUAL(CRYPTO_COININFO_TESTNET_BTC, hdkey.key.derived.useinfo.network);
+    TEST_ASSERT_EQUAL(CRYPTO_COININFO_TESTNET, hdkey.key.derived.useinfo.network);
 
-    TEST_ASSERT_TRUE(hdkey.key.derived.valid_origin);
     TEST_ASSERT_EQUAL(5, hdkey.key.derived.origin.components_count);
 
     TEST_ASSERT_EQUAL(path_component_type_index, hdkey.key.derived.origin.components[0].type);
@@ -135,9 +153,33 @@ void test_crypto_hdkey_parse_2() {
     TEST_ASSERT_EQUAL(0, hdkey.key.derived.origin.source_fingerprint);
     TEST_ASSERT_EQUAL(0, hdkey.key.derived.origin.depth);
 
-    TEST_ASSERT_FALSE(hdkey.key.derived.valid_children);
+    TEST_ASSERT_EQUAL(0, hdkey.key.derived.children.components_count);
 
     TEST_ASSERT_EQUAL(3910671603, hdkey.key.derived.parent_fingerprint);
+
+    uint8_t bip32[78];
+    bool ok = hdkey2bip32(&hdkey, bip32);
+    TEST_ASSERT_TRUE(ok);
+    uint8_t expected[78] = {0x04, 0x35, 0x87, 0xcf, 0x05, 0xe9, 0x18, 0x1c, 0xf3, 0x00, 0x00, 0x00, 0x01, 0xce, 0xd1, 0x55,
+                            0xc7, 0x24, 0x56, 0x25, 0x58, 0x81, 0x79, 0x35, 0x14, 0xed, 0xc5, 0xbd, 0x94, 0x47, 0xe7, 0xf7,
+                            0x4a, 0xbb, 0x88, 0xc6, 0xd6, 0xb6, 0x48, 0x0f, 0xd0, 0x16, 0xee, 0x8c, 0x85, 0x02, 0x6f, 0xe2,
+                            0x35, 0x57, 0x45, 0xbb, 0x2d, 0xb3, 0x63, 0x0b, 0xbc, 0x80, 0xef, 0x5d, 0x58, 0x95, 0x1c, 0x96,
+                            0x3c, 0x84, 0x1f, 0x54, 0x17, 0x0b, 0xa6, 0xe5, 0xc1, 0x2b, 0xe7, 0xfc, 0x12, 0xa6};
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+    {
+        char keypath[BUFSIZE];
+        const char *expected = "[e9181cf3/44'/1'/1'/0/1]";
+        int len = hdkey2keypathstr(&hdkey, BUFSIZE, (char *)&keypath);
+        TEST_ASSERT_GREATER_THAN_INT(0, len);
+        TEST_ASSERT_EQUAL_STRING(expected, keypath);
+    }
+    {
+        char trailing[BUFSIZE];
+        const char *expected = "[e9181cf3/44'/1'/1'/0/1]";
+        int len = hdkeytrail(&hdkey, BUFSIZE, (char *)&trailing);
+        TEST_ASSERT_EQUAL(0, len);
+        TEST_ASSERT_EQUAL_STRING(expected, trailing);
+    }
 }
 
 void test_crypto_output_parse_1() {
@@ -172,8 +214,7 @@ void test_crypto_output_parse_2() {
     TEST_ASSERT_EQUAL(keyexp_keytype_eckey, output.output.key.keytype);
     TEST_ASSERT_EQUAL(eckey_type_public_compressed, output.output.key.key.eckey.type);
     TEST_ASSERT_EQUAL_HEX(0x03, output.output.key.key.eckey.key.public_compressed[0]);
-    TEST_ASSERT_EQUAL(
-        0x56, output.output.key.key.eckey.key.public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
+    TEST_ASSERT_EQUAL(0x56, output.output.key.key.eckey.key.public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
 }
 
 void test_crypto_output_parse_3() {
@@ -212,7 +253,6 @@ void test_crypto_output_parse_4() {
     TEST_ASSERT_EQUAL_HEX(0x63, output.output.key.key.hdkey.key.derived.chaincode[0]);
     TEST_ASSERT_EQUAL_HEX(0x29, output.output.key.key.hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
     //
-    TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_origin);
     TEST_ASSERT_EQUAL(3, output.output.key.key.hdkey.key.derived.origin.components_count);
     //
     TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.origin.components[0].type);
@@ -227,7 +267,6 @@ void test_crypto_output_parse_4() {
     TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[2].component.index.is_hardened);
     TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.origin.components[2].component.index.index);
 
-    TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_children);
     TEST_ASSERT_EQUAL(2, output.output.key.key.hdkey.key.derived.children.components_count);
 
     TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.children.components[0].type);
@@ -238,6 +277,31 @@ void test_crypto_output_parse_4() {
     TEST_ASSERT_FALSE(output.output.key.key.hdkey.key.derived.children.components[1].component.wildcard.is_hardened);
 
     TEST_ASSERT_EQUAL(2017537594, output.output.key.key.hdkey.key.derived.parent_fingerprint);
+
+    uint8_t bip32[78];
+    bool ok = hdkey2bip32(&output.output.key.key.hdkey, bip32);
+    TEST_ASSERT_TRUE(ok);
+    uint8_t expected[78] = {0x04, 0x88, 0xb2, 0x1e, 0x04, 0x78, 0x41, 0x2e, 0x3a, 0xff, 0xff, 0xff, 0xfe, 0x63, 0x78, 0x07,
+                            0x03, 0x0d, 0x55, 0xd0, 0x1f, 0x9a, 0x0c, 0xb3, 0xa7, 0x83, 0x95, 0x15, 0xd7, 0x96, 0xbd, 0x07,
+                            0x70, 0x63, 0x86, 0xa6, 0xed, 0xdf, 0x06, 0xcc, 0x29, 0xa6, 0x5a, 0x0e, 0x29, 0x02, 0xd2, 0xb3,
+                            0x69, 0x00, 0x39, 0x6c, 0x92, 0x82, 0xfa, 0x14, 0x62, 0x85, 0x66, 0x58, 0x2f, 0x20, 0x6a, 0x5d,
+                            0xd0, 0xbc, 0xc8, 0xd5, 0xe8, 0x92, 0x61, 0x18, 0x06, 0xca, 0xfb, 0x03, 0x01, 0xf0};
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+
+    {
+        char keypath[BUFSIZE];
+        const char *expected = "[d34db33f/44'/0'/0']";
+        int len = hdkey2keypathstr(&output.output.key.key.hdkey, BUFSIZE, (char *)&keypath);
+        TEST_ASSERT_GREATER_THAN_INT(0, len);
+        TEST_ASSERT_EQUAL_STRING(expected, keypath);
+    }
+    {
+        char trailing[BUFSIZE];
+        const char *expected = "/1/*";
+        int len = hdkeytrail(&output.output.key.key.hdkey, BUFSIZE, (char *)&trailing);
+        TEST_ASSERT_GREATER_THAN_INT(0, len);
+        TEST_ASSERT_EQUAL_STRING(expected, trailing);
+    }
 }
 
 void test_crypto_output_parse_5() {
@@ -293,7 +357,6 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_chaincode);
         TEST_ASSERT_EQUAL_HEX(0x64, output.output.key.key.hdkey.key.derived.chaincode[0]);
         TEST_ASSERT_EQUAL_HEX(0x5b, output.output.key.key.hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
-        TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_origin);
         TEST_ASSERT_EQUAL(3, output.output.key.key.hdkey.key.derived.origin.components_count);
         TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.origin.components[0].type);
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[0].component.index.is_hardened);
@@ -305,8 +368,30 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[2].component.index.is_hardened);
         TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.origin.components[2].component.index.index);
         TEST_ASSERT_EQUAL(934670036, output.output.key.key.hdkey.key.derived.origin.source_fingerprint);
-        TEST_ASSERT_FALSE(output.output.key.key.hdkey.key.derived.valid_children);
+        TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.children.components_count);
         TEST_ASSERT_EQUAL(2583285239, output.output.key.key.hdkey.key.derived.parent_fingerprint);
+
+        uint8_t bip32[78];
+        bool ok = hdkey2bip32(&output.output.key.key.hdkey, bip32);
+        TEST_ASSERT_TRUE(ok);
+        uint8_t expected[78] = {0x04, 0x88, 0xb2, 0x1e, 0x03, 0x99, 0xf9, 0xcd, 0xf7, 0x80, 0x00, 0x00, 0x00, 0x64, 0x56, 0xa5,
+                                0xdf, 0x2d, 0xb0, 0xf6, 0xd9, 0xaf, 0x72, 0xb2, 0xa1, 0xaf, 0x4b, 0x25, 0xf4, 0x52, 0x00, 0xed,
+                                0x6f, 0xcc, 0x29, 0xc3, 0x44, 0x0b, 0x31, 0x1d, 0x47, 0x96, 0xb7, 0x0b, 0x5b, 0x03, 0xeb, 0x3e,
+                                0x28, 0x63, 0x91, 0x18, 0x26, 0x37, 0x4d, 0xe8, 0x6c, 0x23, 0x1a, 0x4b, 0x76, 0xf0, 0xb8, 0x9d,
+                                0xfa, 0x17, 0x4a, 0xfb, 0x78, 0xd7, 0xf4, 0x78, 0x19, 0x98, 0x84, 0xd9, 0xdd, 0x32};
+        TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+        {
+            char keypath[BUFSIZE];
+            const char *expected = "[37b5eed4/44'/0'/0']";
+            int len = hdkey2keypathstr(&output.output.key.key.hdkey, BUFSIZE, (char *)&keypath);
+            TEST_ASSERT_GREATER_THAN_INT(0, len);
+            TEST_ASSERT_EQUAL_STRING(expected, keypath);
+        }
+        {
+            char trailing[BUFSIZE];
+            int len = hdkeytrail(&output.output.key.key.hdkey, BUFSIZE, (char *)&trailing);
+            TEST_ASSERT_EQUAL(0, len);
+        }
     }
     {
         crypto_output output = account.descriptors[1];
@@ -319,7 +404,6 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_chaincode);
         TEST_ASSERT_EQUAL_HEX(0x9d, output.output.key.key.hdkey.key.derived.chaincode[0]);
         TEST_ASSERT_EQUAL_HEX(0x2d, output.output.key.key.hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
-        TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_origin);
         TEST_ASSERT_EQUAL(3, output.output.key.key.hdkey.key.derived.origin.components_count);
         TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.origin.components[0].type);
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[0].component.index.is_hardened);
@@ -331,8 +415,30 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[2].component.index.is_hardened);
         TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.origin.components[2].component.index.index);
         TEST_ASSERT_EQUAL(934670036, output.output.key.key.hdkey.key.derived.origin.source_fingerprint);
-        TEST_ASSERT_FALSE(output.output.key.key.hdkey.key.derived.valid_children);
+        TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.children.components_count);
         TEST_ASSERT_EQUAL(2819587291, output.output.key.key.hdkey.key.derived.parent_fingerprint);
+
+        uint8_t bip32[78];
+        bool ok = hdkey2bip32(&output.output.key.key.hdkey, bip32);
+        TEST_ASSERT_TRUE(ok);
+        uint8_t expected[78] = {0x04, 0x88, 0xb2, 0x1e, 0x03, 0xa8, 0x0f, 0x7c, 0xdb, 0x80, 0x00, 0x00, 0x00, 0x9d, 0x2f, 0x86,
+                                0x04, 0x32, 0x76, 0xf9, 0x25, 0x1a, 0x4a, 0x4f, 0x57, 0x71, 0x66, 0xa5, 0xab, 0xeb, 0x16, 0xb6,
+                                0xec, 0x61, 0xe2, 0x26, 0xb5, 0xb8, 0xfa, 0x11, 0x03, 0x8b, 0xfd, 0xa4, 0x2d, 0x02, 0xc7, 0xe4,
+                                0x82, 0x37, 0x30, 0xf6, 0xee, 0x2c, 0xf8, 0x64, 0xe2, 0xc3, 0x52, 0x06, 0x0a, 0x88, 0xe6, 0x0b,
+                                0x51, 0xa8, 0x4e, 0x89, 0xe4, 0xc8, 0xc7, 0x5e, 0xc2, 0x25, 0x90, 0xad, 0x6b, 0x69};
+        TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+        {
+            char keypath[BUFSIZE];
+            const char *expected = "[37b5eed4/49'/0'/0']";
+            int len = hdkey2keypathstr(&output.output.key.key.hdkey, BUFSIZE, (char *)&keypath);
+            TEST_ASSERT_GREATER_THAN_INT(0, len);
+            TEST_ASSERT_EQUAL_STRING(expected, keypath);
+        }
+        {
+            char trailing[BUFSIZE];
+            int len = hdkeytrail(&output.output.key.key.hdkey, BUFSIZE, (char *)&trailing);
+            TEST_ASSERT_EQUAL(0, len);
+        }
     }
     {
         crypto_output output = account.descriptors[2];
@@ -345,7 +451,6 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_chaincode);
         TEST_ASSERT_EQUAL_HEX(0x72, output.output.key.key.hdkey.key.derived.chaincode[0]);
         TEST_ASSERT_EQUAL_HEX(0x88, output.output.key.key.hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
-        TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_origin);
         TEST_ASSERT_EQUAL(3, output.output.key.key.hdkey.key.derived.origin.components_count);
         TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.origin.components[0].type);
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[0].component.index.is_hardened);
@@ -357,8 +462,30 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[2].component.index.is_hardened);
         TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.origin.components[2].component.index.index);
         TEST_ASSERT_EQUAL(934670036, output.output.key.key.hdkey.key.derived.origin.source_fingerprint);
-        TEST_ASSERT_FALSE(output.output.key.key.hdkey.key.derived.valid_children);
+        TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.children.components_count);
         TEST_ASSERT_EQUAL(224256471, output.output.key.key.hdkey.key.derived.parent_fingerprint);
+
+        uint8_t bip32[78];
+        bool ok = hdkey2bip32(&output.output.key.key.hdkey, bip32);
+        TEST_ASSERT_TRUE(ok);
+        uint8_t expected[78] = {0x04, 0x88, 0xb2, 0x1e, 0x03, 0x0d, 0x5d, 0xe1, 0xd7, 0x80, 0x00, 0x00, 0x00, 0x72, 0xed, 0xe7,
+                                0x33, 0x4d, 0x5a, 0xcf, 0x91, 0xc6, 0xfd, 0xa6, 0x22, 0xc2, 0x05, 0x19, 0x9c, 0x59, 0x5a, 0x31,
+                                0xf9, 0x21, 0x8e, 0xd3, 0x07, 0x92, 0xd3, 0x01, 0xd5, 0xee, 0x9e, 0x3a, 0x88, 0x03, 0xfd, 0x43,
+                                0x34, 0x50, 0xb6, 0x92, 0x4b, 0x4f, 0x7e, 0xfd, 0xd5, 0xd1, 0xed, 0x01, 0x7d, 0x36, 0x4b, 0xe9,
+                                0x5a, 0xb2, 0xb5, 0x92, 0xdc, 0x8b, 0xdd, 0xb3, 0xb0, 0x0c, 0x1c, 0x24, 0xf6, 0x3f};
+        TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+        {
+            char keypath[BUFSIZE];
+            const char *expected = "[37b5eed4/84'/0'/0']";
+            int len = hdkey2keypathstr(&output.output.key.key.hdkey, BUFSIZE, (char *)&keypath);
+            TEST_ASSERT_GREATER_THAN_INT(0, len);
+            TEST_ASSERT_EQUAL_STRING(expected, keypath);
+        }
+        {
+            char trailing[BUFSIZE];
+            int len = hdkeytrail(&output.output.key.key.hdkey, BUFSIZE, (char *)&trailing);
+            TEST_ASSERT_EQUAL(0, len);
+        }
     }
     {
         crypto_output output = account.descriptors[3];
@@ -371,14 +498,36 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_chaincode);
         TEST_ASSERT_EQUAL_HEX(0x88, output.output.key.key.hdkey.key.derived.chaincode[0]);
         TEST_ASSERT_EQUAL_HEX(0x23, output.output.key.key.hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
-        TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_origin);
         TEST_ASSERT_EQUAL(1, output.output.key.key.hdkey.key.derived.origin.components_count);
         TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.origin.components[0].type);
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[0].component.index.is_hardened);
         TEST_ASSERT_EQUAL(45, output.output.key.key.hdkey.key.derived.origin.components[0].component.index.index);
         TEST_ASSERT_EQUAL(934670036, output.output.key.key.hdkey.key.derived.origin.source_fingerprint);
-        TEST_ASSERT_FALSE(output.output.key.key.hdkey.key.derived.valid_children);
+        TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.children.components_count);
         TEST_ASSERT_EQUAL(934670036, output.output.key.key.hdkey.key.derived.parent_fingerprint);
+
+        uint8_t bip32[78];
+        bool ok = hdkey2bip32(&output.output.key.key.hdkey, bip32);
+        TEST_ASSERT_TRUE(ok);
+        uint8_t expected[78] = {0x04, 0x88, 0xb2, 0x1e, 0x01, 0x37, 0xb5, 0xee, 0xd4, 0x80, 0x00, 0x00, 0x2d, 0x88, 0xd3, 0x29,
+                                0x9b, 0x44, 0x8f, 0x87, 0x21, 0x5d, 0x96, 0xb0, 0xc2, 0x26, 0x23, 0x5a, 0xfc, 0x02, 0x7f, 0x9e,
+                                0x7d, 0xc7, 0x00, 0x28, 0x4f, 0x3e, 0x91, 0x2a, 0x34, 0xda, 0xeb, 0x1a, 0x23, 0x03, 0x5c, 0xcd,
+                                0x58, 0xb6, 0x3a, 0x2c, 0xdc, 0x23, 0xd0, 0x81, 0x27, 0x10, 0x60, 0x35, 0x92, 0xe7, 0x45, 0x75,
+                                0x73, 0x21, 0x18, 0x80, 0xcb, 0x59, 0xb1, 0xef, 0x01, 0x2e, 0x16, 0x8e, 0x05, 0x9a};
+        TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+
+        {
+            char keypath[BUFSIZE];
+            const char *expected = "[37b5eed4/45']";
+            int len = hdkey2keypathstr(&output.output.key.key.hdkey, BUFSIZE, (char *)&keypath);
+            TEST_ASSERT_GREATER_THAN_INT(0, len);
+            TEST_ASSERT_EQUAL_STRING(expected, keypath);
+        }
+        {
+            char trailing[BUFSIZE];
+            int len = hdkeytrail(&output.output.key.key.hdkey, BUFSIZE, (char *)&trailing);
+            TEST_ASSERT_EQUAL(0, len);
+        }
     }
     {
         crypto_output output = account.descriptors[4];
@@ -391,7 +540,6 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_chaincode);
         TEST_ASSERT_EQUAL_HEX(0x79, output.output.key.key.hdkey.key.derived.chaincode[0]);
         TEST_ASSERT_EQUAL_HEX(0xb6, output.output.key.key.hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
-        TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_origin);
         TEST_ASSERT_EQUAL(4, output.output.key.key.hdkey.key.derived.origin.components_count);
         TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.origin.components[0].type);
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[0].component.index.is_hardened);
@@ -406,8 +554,31 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[3].component.index.is_hardened);
         TEST_ASSERT_EQUAL(1, output.output.key.key.hdkey.key.derived.origin.components[3].component.index.index);
         TEST_ASSERT_EQUAL(934670036, output.output.key.key.hdkey.key.derived.origin.source_fingerprint);
-        TEST_ASSERT_FALSE(output.output.key.key.hdkey.key.derived.valid_children);
+        TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.children.components_count);
         TEST_ASSERT_EQUAL(1505139498, output.output.key.key.hdkey.key.derived.parent_fingerprint);
+
+        uint8_t bip32[78];
+        bool ok = hdkey2bip32(&output.output.key.key.hdkey, bip32);
+        TEST_ASSERT_TRUE(ok);
+        uint8_t expected[78] = {0x04, 0x88, 0xb2, 0x1e, 0x04, 0x59, 0xb6, 0x9b, 0x2a, 0x80, 0x00, 0x00, 0x01, 0x79, 0x53, 0xef,
+                                0xe1, 0x6a, 0x73, 0xe5, 0xd3, 0xf9, 0xf2, 0xd4, 0xc6, 0xe4, 0x9b, 0xd8, 0x8e, 0x22, 0x09, 0x3b,
+                                0xbd, 0x85, 0xbe, 0x5a, 0x7e, 0x86, 0x2a, 0x4b, 0x98, 0xa1, 0x6e, 0x0a, 0xb6, 0x03, 0x2c, 0x78,
+                                0xeb, 0xfc, 0xab, 0xda, 0xc6, 0xd7, 0x35, 0xa0, 0x82, 0x0e, 0xf8, 0x73, 0x2f, 0x28, 0x21, 0xb4,
+                                0xfb, 0x84, 0xcd, 0x5d, 0x6b, 0x26, 0x52, 0x69, 0x38, 0xf9, 0x0c, 0x05, 0x07, 0x11};
+        TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+
+        {
+            char keypath[BUFSIZE];
+            const char *expected = "[37b5eed4/48'/0'/0'/1']";
+            int len = hdkey2keypathstr(&output.output.key.key.hdkey, BUFSIZE, (char *)&keypath);
+            TEST_ASSERT_GREATER_THAN_INT(0, len);
+            TEST_ASSERT_EQUAL_STRING(expected, keypath);
+        }
+        {
+            char trailing[BUFSIZE];
+            int len = hdkeytrail(&output.output.key.key.hdkey, BUFSIZE, (char *)&trailing);
+            TEST_ASSERT_EQUAL(0, len);
+        }
     }
     {
         crypto_output output = account.descriptors[5];
@@ -420,7 +591,6 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_chaincode);
         TEST_ASSERT_EQUAL_HEX(0x2f, output.output.key.key.hdkey.key.derived.chaincode[0]);
         TEST_ASSERT_EQUAL_HEX(0x13, output.output.key.key.hdkey.key.derived.chaincode[CRYPTO_HDKEY_CHAINCODE_SIZE - 1]);
-        TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.valid_origin);
         TEST_ASSERT_EQUAL(4, output.output.key.key.hdkey.key.derived.origin.components_count);
         TEST_ASSERT_EQUAL(path_component_type_index, output.output.key.key.hdkey.key.derived.origin.components[0].type);
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[0].component.index.is_hardened);
@@ -435,8 +605,30 @@ void test_crypto_account_parse() {
         TEST_ASSERT_TRUE(output.output.key.key.hdkey.key.derived.origin.components[3].component.index.is_hardened);
         TEST_ASSERT_EQUAL(2, output.output.key.key.hdkey.key.derived.origin.components[3].component.index.index);
         TEST_ASSERT_EQUAL(934670036, output.output.key.key.hdkey.key.derived.origin.source_fingerprint);
-        TEST_ASSERT_FALSE(output.output.key.key.hdkey.key.derived.valid_children);
+        TEST_ASSERT_EQUAL(0, output.output.key.key.hdkey.key.derived.children.components_count);
         TEST_ASSERT_EQUAL(1505139498, output.output.key.key.hdkey.key.derived.parent_fingerprint);
+
+        uint8_t bip32[78];
+        bool ok = hdkey2bip32(&output.output.key.key.hdkey, bip32);
+        TEST_ASSERT_TRUE(ok);
+        uint8_t expected[78] = {0x04, 0x88, 0xb2, 0x1e, 0x04, 0x59, 0xb6, 0x9b, 0x2a, 0x80, 0x00, 0x00, 0x02, 0x2f, 0xa0, 0xe4,
+                                0x1c, 0x9d, 0xc4, 0x3d, 0xc4, 0x51, 0x86, 0x59, 0xbf, 0xce, 0xf9, 0x35, 0xba, 0x81, 0x01, 0xb5,
+                                0x7d, 0xbc, 0x08, 0x12, 0x80, 0x5d, 0xd9, 0x83, 0xbc, 0x1d, 0x34, 0xb8, 0x13, 0x02, 0x60, 0x56,
+                                0x3e, 0xe8, 0x0c, 0x26, 0x84, 0x46, 0x21, 0xb0, 0x6b, 0x74, 0x07, 0x0b, 0xaf, 0x0e, 0x23, 0xfb,
+                                0x76, 0xce, 0x43, 0x9d, 0x02, 0x37, 0xe8, 0x75, 0x02, 0xeb, 0xbd, 0x3c, 0xa3, 0x46};
+        TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, 78);
+        {
+            char keypath[BUFSIZE];
+            const char *expected = "[37b5eed4/48'/0'/0'/2']";
+            int len = hdkey2keypathstr(&output.output.key.key.hdkey, BUFSIZE, (char *)&keypath);
+            TEST_ASSERT_GREATER_THAN_INT(0, len);
+            TEST_ASSERT_EQUAL_STRING(expected, keypath);
+        }
+        {
+            char trailing[BUFSIZE];
+            int len = hdkeytrail(&output.output.key.key.hdkey, BUFSIZE, (char *)&trailing);
+            TEST_ASSERT_EQUAL(0, len);
+        }
     }
 }
 

@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <tinycbor/cbor.h>
 
 #include "macros.h"
 #include "utils.h"

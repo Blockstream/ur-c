@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "tinycbor/cbor.h"
+#include "cbor.h"
 
 typedef enum {
     urc_error_tag_noerror = 0,

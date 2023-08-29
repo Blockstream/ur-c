@@ -10,6 +10,10 @@
                 "FETCH_DEPS": {
                     "type": "BOOL",
                     "value": "ON"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Release"
                 }
             }
         },

@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "ur-c/crypto_output.h"
-#include "ur-c/error.h"
+#include "urc/crypto_output.h"
+#include "urc/error.h"
 
 #ifndef DESCRIPTORS_MAX_SIZE
 #define DESCRIPTORS_MAX_SIZE 10
@@ -14,4 +14,5 @@ typedef struct {
     size_t descriptors_count;
     uint32_t master_fingerprint;
 } crypto_account;
-urc_error parse_account(size_t size, const uint8_t buffer[size], crypto_account *out);
+
+urc_error parse_account(size_t size, const uint8_t *buffer, crypto_account *out);

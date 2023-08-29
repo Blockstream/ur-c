@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ur-c/error.h"
-#include "ur-c/crypto_eckey.h"
-#include "ur-c/crypto_hdkey.h"
-#include "ur-c/crypto_output.h"
+#include "urc/error.h"
+#include "urc/crypto_eckey.h"
+#include "urc/crypto_hdkey.h"
+#include "urc/crypto_output.h"
 
 
 urc_error internal_parse_output(CborValue *iter, crypto_output *out);
