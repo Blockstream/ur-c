@@ -22,6 +22,7 @@ add_library(urc
     include/urc/urc.h
 
     src/account.c include/urc/crypto_account.h
+    src/jadeaccount.c
     src/eckey.c include/urc/crypto_eckey.h
     src/hdkey.c include/urc/crypto_hdkey.h
     src/output.c include/urc/crypto_output.h

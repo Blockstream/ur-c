@@ -15,4 +15,9 @@ typedef struct {
     uint32_t master_fingerprint;
 } crypto_account;
 
+// WARNING: taproot outpute descriptors are not yet supported
+// when a taproot descriptor is found, this function skips it, carries on and collects the other descriptors
+
 urc_error parse_account(size_t size, const uint8_t *buffer, crypto_account *out);
+// parse an account in jade format, descriptors are not introduced by tag 308
+urc_error parse_jadeaccount(size_t size, const uint8_t *buffer, crypto_account *out);

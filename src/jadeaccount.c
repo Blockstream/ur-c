@@ -10,9 +10,9 @@
 #include "macros.h"
 #include "utils.h"
 
-urc_error internal_parse_account(CborValue *iter, crypto_account *out);
+urc_error internal_parse_jadeaccount(CborValue *iter, crypto_account *out);
 
-urc_error parse_account(size_t size, const uint8_t *buffer, crypto_account *out) {
+urc_error parse_jadeaccount(size_t size, const uint8_t *buffer, crypto_account *out) {
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -21,10 +21,10 @@ urc_error parse_account(size_t size, const uint8_t *buffer, crypto_account *out)
         urc_error result = {.tag = urc_error_tag_cborinternalerror, .internal.cbor = err};
         return result;
     }
-    return internal_parse_account(&iter, out);
+    return internal_parse_jadeaccount(&iter, out);
 }
 
-urc_error internal_parse_account(CborValue *iter, crypto_account *out) {
+urc_error internal_parse_jadeaccount(CborValue *iter, crypto_account *out) {
     urc_error result = {.tag = urc_error_tag_noerror};
     out->descriptors_count = 0;
     bool taproot_found = false;
@@ -65,12 +65,6 @@ urc_error internal_parse_account(CborValue *iter, crypto_account *out) {
         int limit = DESCRIPTORS_MAX_SIZE > len ? len : DESCRIPTORS_MAX_SIZE;
         int item_idx = 0;
         for (int parser_idx = 0; parser_idx < limit; parser_idx++) {
-            result = check_tag(&array_item, urc_urtypes_tags_crypto_output);
-            if (result.tag != urc_error_tag_noerror) {
-                goto exit;
-            }
-            ADVANCE(&array_item, result, exit);
-
             result = internal_parse_output(&array_item, &out->descriptors[item_idx++]);
             // // WARNING: taproot not yet supported, skipping it
             if (result.tag == urc_error_tag_taprootnotsupported) {
