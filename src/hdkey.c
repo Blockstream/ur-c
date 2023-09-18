@@ -498,7 +498,7 @@ exit:
     return result;
 }
 
-bool hdkey2bip32(const crypto_hdkey *hdkey, uint8_t out[78]) {
+bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN]) {
     size_t cursor = 0;
 
     uint32_t *version = (uint32_t *)&out[cursor]; // 0 - 3
@@ -629,12 +629,12 @@ bool hdkey2bip32(const crypto_hdkey *hdkey, uint8_t out[78]) {
     return true;
 }
 
-int hdkey2keypathstr(const crypto_hdkey *hdkey, size_t size, char *out) {
+int format_keyorigin(const crypto_hdkey *hdkey, size_t size, char *out) {
     switch (hdkey->type) {
     case hdkey_type_master:
         return 0;
     case hdkey_type_na:
-        return -2;
+        return -1;
     default:
         break;
     }
@@ -645,8 +645,9 @@ int hdkey2keypathstr(const crypto_hdkey *hdkey, size_t size, char *out) {
         fpr = hdkey->key.derived.parent_fingerprint;
     }
     len += snprintf(out, size, "[%x", fpr);
+    // either an error or an out-of-space
     if (len < 0 || (size_t)len >= size) {
-        return -1;
+        return len;
     }
     for (size_t idx = 0; idx < hdkey->key.derived.origin.components_count; idx++) {
         const path_component *comp = &hdkey->key.derived.origin.components[idx];
@@ -659,25 +660,24 @@ int hdkey2keypathstr(const crypto_hdkey *hdkey, size_t size, char *out) {
             }
             break;
         default:
-            return -2;
-        }
-        if (len < 0 || (size_t)len >= size) {
             return -1;
+        }
+        // either an error or an out-of-space
+        if (len < 0 || (size_t)len >= size) {
+            return len;
         }
     }
     len += snprintf(&out[len], size - len, "]");
-    if (len < 0 || (size_t)len >= size) {
-        return -1;
-    }
+    // it includes error or out-of-space cases
     return len;
 }
 
-int hdkeytrail(const crypto_hdkey *hdkey, size_t size, char *out) {
+int format_keyderivationpath(const crypto_hdkey *hdkey, size_t size, char *out) {
     switch (hdkey->type) {
     case hdkey_type_master:
         return 0;
     case hdkey_type_na:
-        return -2;
+        return -1;
     default:
         break;
     }
@@ -697,15 +697,13 @@ int hdkeytrail(const crypto_hdkey *hdkey, size_t size, char *out) {
             len += snprintf(&out[len], size - len, "/*");
             break;
         default:
-            return -2;
-        }
-        if (len < 0 || (size_t)len >= size) {
             return -1;
+        }
+        // either an error or an out-of-space
+        if (len < 0 || (size_t)len >= size) {
+            return len; 
         }
     }
 
-    if (len < 0 || (size_t)len >= size) {
-        return -1;
-    }
     return len;
 }
