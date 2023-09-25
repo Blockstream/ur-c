@@ -98,12 +98,13 @@ else()
     find_package(unity REQUIRED)
 endif()
 
-add_executable(parser 
+add_executable(units
     tests/helpers.h tests/helpers.c
 
     tests/parser.c
+    tests/runner.c
 )
-target_link_libraries(parser PRIVATE urc unity)
-target_include_directories(parser PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(units PRIVATE urc unity)
+target_include_directories(units PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-add_test(NAME parser COMMAND parser)
+add_test(NAME units COMMAND units)
