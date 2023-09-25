@@ -691,3 +691,28 @@ TEST(parser, crypto_jadeaccount_parse) {
     }
 }
 
+TEST(parser, jaderesponse_parse) {
+    const char *hex =
+        "a2667075626b657958210252835e60d6157695c0faf7ab501c1ef206332652f47a4a69d09a388632b2428369656e6372797074656458606ebdd102c0"
+        "24adbd2a26140262a31d1948863df0d6fc21b6a249028f5c97e3b553d79417310931ba8d6467d4a3e0f64a77999300708f19c9fc4ea5f2b13e0ebb17"
+        "9137e6b192bf711fb364857912364a62f02f59c3723d0072c42b59b9a14f34"
+        "cd1a24eedb65292c78b4680f658ab11aeff1671d5246f71636860b06d90130a301861854f500f500f5021ab6215d6b0303081a97538da9";
+    uint8_t raw[BUFSIZE];
+    int len = h2b(hex, BUFSIZE, (uint8_t *)(&raw));
+    TEST_ASSERT_GREATER_THAN_INT(0, len);
+
+    jade_response response;
+    uint8_t out[BUFSIZE];
+    response.buffer = out;
+    response.buffer_size = BUFSIZE;
+    urc_error err = parse_jaderesponse(len, raw, &response);
+    TEST_ASSERT_EQUAL(urc_error_tag_noerror, err.tag);
+
+    TEST_ASSERT_EQUAL_HEX(0x02, response.pubkey[0]);
+    TEST_ASSERT_EQUAL_HEX(0x83, response.pubkey[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE-1]);
+
+    TEST_ASSERT_EQUAL(96, response.encrypted_len);
+    TEST_ASSERT_EQUAL_HEX(0x6e, response.buffer[0]);
+    TEST_ASSERT_EQUAL_HEX(0x34, response.buffer[response.encrypted_len-1]);
+
+}
