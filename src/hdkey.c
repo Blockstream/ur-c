@@ -78,7 +78,7 @@ urc_error internal_parse_masterkey(CborValue *iter, hd_master_key *out) {
         ADVANCE(&map_item, result, exit);
 
         CHECK_IS_TYPE(&map_item, byte_string, result, exit);
-        result = copy_fixed_size_byte_string(&map_item, CRYPTO_HDKEY_KEYDATA_SIZE, (uint8_t *)&out->keydata);
+        result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->keydata, CRYPTO_HDKEY_KEYDATA_SIZE);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
@@ -92,7 +92,7 @@ urc_error internal_parse_masterkey(CborValue *iter, hd_master_key *out) {
         ADVANCE(&map_item, result, exit);
 
         CHECK_IS_TYPE(&map_item, byte_string, result, exit);
-        result = copy_fixed_size_byte_string(&map_item, CRYPTO_HDKEY_CHAINCODE_SIZE, (uint8_t *)&out->chaincode);
+        result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->chaincode, CRYPTO_HDKEY_CHAINCODE_SIZE);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
@@ -130,7 +130,7 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
         ADVANCE(&map_item, result, exit);
 
         CHECK_IS_TYPE(&map_item, byte_string, result, exit);
-        result = copy_fixed_size_byte_string(&map_item, CRYPTO_HDKEY_KEYDATA_SIZE, (uint8_t *)&out->keydata);
+        result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->keydata, CRYPTO_HDKEY_KEYDATA_SIZE);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
@@ -142,7 +142,7 @@ urc_error internal_parse_derivedkey(CborValue *iter, hd_derived_key *out) {
             ADVANCE(&map_item, result, exit);
 
             CHECK_IS_TYPE(&map_item, byte_string, result, exit);
-            result = copy_fixed_size_byte_string(&map_item, CRYPTO_HDKEY_CHAINCODE_SIZE, (uint8_t *)&out->chaincode);
+            result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->chaincode, CRYPTO_HDKEY_CHAINCODE_SIZE);
             if (result.tag != urc_error_tag_noerror) {
                 goto exit;
             }

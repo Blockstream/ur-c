@@ -78,24 +78,50 @@ bool is_tag(CborValue *cursor, unsigned long expected_tag) {
     return true;
 }
 
-urc_error copy_fixed_size_byte_string(CborValue *cursor, size_t expected, uint8_t buffer[expected]) {
+urc_error copy_fixed_size_byte_string(CborValue *cursor, uint8_t *buffer, size_t len) {
     urc_error result = {.tag = urc_error_tag_noerror};
     if (!cbor_value_is_byte_string(cursor)) {
         result.tag = urc_error_tag_wrongtype;
         return result;
     }
-    size_t len;
-    CborError err = cbor_value_get_string_length(cursor, &len);
+    size_t cborlen;
+    CborError err = cbor_value_get_string_length(cursor, &cborlen);
     if (err != CborNoError) {
         result.tag = urc_error_tag_cborinternalerror;
         result.internal.cbor = err;
         return result;
     }
-    if (len != expected) {
+    if (cborlen != len) {
         result.tag = urc_error_tag_wrongstringlength;
         return result;
     }
-    size_t buflen = expected;
-    cbor_value_copy_byte_string(cursor, buffer, &buflen, NULL);
+    err = cbor_value_copy_byte_string(cursor, buffer, &len, NULL);
+    if (err != CborNoError) {
+        result.tag = urc_error_tag_cborinternalerror;
+        result.internal.cbor = err;
+    }
+    return result;
+}
+
+int copy_fixed_size_byte_string2(CborValue *cursor, uint8_t *buffer, size_t len) {
+    int result = URC_OK;
+    if (!cbor_value_is_byte_string(cursor)) {
+        result = URC_EUNEXPECTEDTYPE;
+        return result;
+    }
+    size_t cborlen;
+    CborError err = cbor_value_get_string_length(cursor, &cborlen);
+    if (err != CborNoError) {
+        result = URC_ECBORINTERNALERROR;
+        return result;
+    }
+    if (cborlen != len) {
+        result = URC_EUNEXPECTEDSTRINGLENGTH;
+        return result;
+    }
+    err = cbor_value_copy_byte_string(cursor, buffer, &len, NULL);
+    if (err != CborNoError) {
+        result = URC_ECBORINTERNALERROR;
+    }
     return result;
 }

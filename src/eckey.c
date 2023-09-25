@@ -63,7 +63,7 @@ urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     ADVANCE(&map_item, result, exit);
 
     if (is_private) {
-        result = copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PRIVATE_SIZE, (uint8_t *)&out->key.prvate);
+        result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->key.prvate, CRYPTO_ECKEY_PRIVATE_SIZE);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
@@ -74,7 +74,7 @@ urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     err = cbor_value_get_string_length(&map_item, &len);
     CHECK_CBOR_ERROR(err, result, exit);
     if (len == CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE) {
-        result = copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, (uint8_t *)&out->key.public_compressed);
+        result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->key.public_compressed, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }
@@ -83,7 +83,7 @@ urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     }
     if (len == CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE) {
         result =
-            copy_fixed_size_byte_string(&map_item, CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE, (uint8_t *)&out->key.public_uncompressed);
+            copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->key.public_uncompressed, CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }

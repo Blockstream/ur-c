@@ -56,7 +56,7 @@ urc_error internal_parse_output(CborValue *iter, crypto_output *out) {
         break;
     case urc_urtypes_tags_output_rawscript:
         ADVANCE(iter, result, exit);
-        result = copy_fixed_size_byte_string(iter, 32, (uint8_t *)out->output.raw);
+        result = copy_fixed_size_byte_string(iter, (uint8_t *)out->output.raw, 32);
         if (result.tag != urc_error_tag_noerror) {
             goto exit;
         }

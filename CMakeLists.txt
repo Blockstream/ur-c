@@ -28,6 +28,7 @@ add_library(urc
     src/output.c include/urc/crypto_output.h
     src/psbt.c include/urc/crypto_psbt.h
     src/seed.c include/urc/crypto_seed.h
+    src/bip8539.c include/urc/jade_bip8539.h
 
     src/internals.h
     src/macros.h
@@ -43,6 +44,7 @@ set(urc_headers
     ${CMAKE_SOURCE_DIR}/include/urc/crypto_output.h
     ${CMAKE_SOURCE_DIR}/include/urc/crypto_psbt.h
     ${CMAKE_SOURCE_DIR}/include/urc/crypto_seed.h
+    ${CMAKE_SOURCE_DIR}/include/urc/jade_bip8539.h
 )
 
 target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)
@@ -101,7 +103,7 @@ endif()
 add_executable(units
     tests/helpers.h tests/helpers.c
 
-    tests/parser.c
+    tests/parser.c tests/formatter.c
     tests/runner.c
 )
 target_link_libraries(units PRIVATE urc unity)

@@ -67,7 +67,7 @@ typedef struct {
 #define CRYPTO_COININFO_TESTNET 1
 typedef struct {
     uint32_t type;
-    int network;
+    int32_t network;
 } crypto_coininfo;
 
 #ifndef NAME_BUFFER_SIZE

@@ -37,7 +37,7 @@ urc_error internal_parse_seed(CborValue *iter, crypto_seed *out) {
 
     ADVANCE(&item, result, exit);
 
-    result = copy_fixed_size_byte_string(&item, CRYPTO_SEED_SIZE, out->seed);
+    result = copy_fixed_size_byte_string(&item, out->seed, CRYPTO_SEED_SIZE);
     if (result.tag != urc_error_tag_noerror) {
         goto exit;
     }
