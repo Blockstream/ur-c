@@ -11,6 +11,10 @@
                     "type": "BOOL",
                     "value": "ON"
                 },
+                "CMAKE_POSITION_INDEPENDENT_CODE": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
                     "value": "Release"
