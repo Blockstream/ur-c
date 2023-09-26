@@ -3,6 +3,7 @@
 
 #include "cbor.h"
 
+
 typedef enum {
     urc_error_tag_noerror = 0,
 
@@ -15,12 +16,18 @@ typedef enum {
     urc_error_tag_notimplementedurtype,
     urc_error_tag_unknownformat,
     urc_error_tag_taprootnotsupported,
+#ifdef WALLYFIED
+    urc_error_tag_wallyinternalerror
+#endif
 
 } urc_error_tags;
 
 typedef struct {
     union {
         CborError cbor;
+#ifdef WALLYFIED
+        int wally_error_code;
+#endif
     } internal;
     urc_error_tags tag;
 } urc_error;

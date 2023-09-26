@@ -8,14 +8,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 option(FETCH_DEPS "tell cmake to go fetch dependencies itself" OFF)
+option(WALLYFY "use APIs of wallycore to provide higher-level APIs" OFF)
 
 ### dependencies
 include(cmake/dependencies.cmake)
 if (FETCH_DEPS)
     fetch_tinycbor()
+    if (WALLYFY)
+        fetch_wally()
+    endif()
 else()
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(TinyCBOR REQUIRED IMPORTED_TARGET tinycbor)
+    if (WALLYFY)
+        pkg_check_modules(wallycore REQUIRED IMPORTED_TARGET wallycore)
+        pkg_check_modules(libsecp256k1 REQUIRED IMPORTED_TARGET libsecp256k1)
+    endif()
 endif()
 
 add_library(urc 
@@ -34,6 +42,12 @@ add_library(urc
     src/macros.h
     src/utils.c src/utils.h
 )
+if (WALLYFY)
+    target_sources(urc PRIVATE
+        src/wally.c include/urc/wally.h
+        src/json.c include/urc/json.h
+)
+endif()
 set(urc_headers
     ${CMAKE_SOURCE_DIR}/include/urc/urc.h
     ${CMAKE_SOURCE_DIR}/include/urc/error.h
@@ -45,7 +59,6 @@ set(urc_headers
     ${CMAKE_SOURCE_DIR}/include/urc/crypto_psbt.h
     ${CMAKE_SOURCE_DIR}/include/urc/crypto_seed.h
 )
-
 target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)
 target_include_directories(urc PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
@@ -57,6 +70,14 @@ set_target_properties(urc PROPERTIES
     C_STANDARD 11
 )
 target_compile_options(urc PRIVATE -Wall -Wextra -Wpedantic -Werror)
+if (WALLYFY)
+    target_link_libraries(urc PUBLIC  PkgConfig::wallycore PkgConfig::libsecp256k1)
+    target_compile_definitions(urc PUBLIC WALLYFIED)
+    list(APPEND urc_headers
+        ${CMAKE_SOURCE_DIR}/include/urc/wally.h
+        ${CMAKE_SOURCE_DIR}/include/urc/json.h
+    )
+endif()
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

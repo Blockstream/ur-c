@@ -24,8 +24,14 @@ TEST(formatter, jaderequest_format) {
     size_t size = h2b(pubkey, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, (uint8_t *)&request.pubkey);
     TEST_ASSERT_EQUAL(CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, size);
 
+#ifdef WALLYFIED
+    uint8_t *buffer;
+    size_t outsize;
+    urc_error err = format_jaderequest(&request, &outsize, &buffer);
+#else
     uint8_t buffer[BUFSIZE];
     urc_error err = format_jaderequest(&request, BUFSIZE, buffer);
+#endif
     TEST_ASSERT_EQUAL(urc_error_tag_noerror, err.tag);
     const char *expected = "a3696e756d5f776f726473181865696e646578190400667075626b65795821037aa2120135ae201c0586ad9f450ad3f4641dd"
                            "abcd9bd3e692944d9d8fd8ed8d2";
@@ -45,8 +51,15 @@ TEST(formatter, jaderequest_format_smallbuffer) {
     size_t size = h2b(pubkey, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, (uint8_t *)&request.pubkey);
     TEST_ASSERT_EQUAL(CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, size);
 
+#ifdef WALLYFIED
+    uint8_t *out;
+    size_t outsize;
+    urc_error err = format_jaderequest(&request, &outsize, &out);
+    TEST_ASSERT_EQUAL(urc_error_tag_noerror, err.tag);
+#else
     uint8_t buffer[SMALLBUFSIZE];
     urc_error err = format_jaderequest(&request, SMALLBUFSIZE, buffer);
     TEST_ASSERT_EQUAL(urc_error_tag_cborinternalerror, err.tag);
     TEST_ASSERT_EQUAL(CborErrorOutOfMemory, err.internal.cbor);
+#endif
 }

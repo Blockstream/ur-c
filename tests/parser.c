@@ -702,9 +702,11 @@ TEST(parser, jaderesponse_parse) {
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     jade_response response;
+#ifndef WALLYFIED
     uint8_t out[BUFSIZE];
     response.buffer = out;
     response.buffer_size = BUFSIZE;
+#endif
     urc_error err = parse_jaderesponse(len, raw, &response);
     TEST_ASSERT_EQUAL(urc_error_tag_noerror, err.tag);
 

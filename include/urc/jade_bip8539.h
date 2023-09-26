@@ -18,6 +18,15 @@ typedef struct {
     uint8_t *buffer;
 } jade_response;
 
+#ifdef WALLYFIED
+
+// out must be freed by caller through wally APIs
+urc_error format_jaderequest(const jade_request *request, size_t *size, uint8_t **out);
+// out->buffer must be freed by caller through wally APIs
+urc_error parse_jaderesponse(size_t size, const uint8_t *buffer, jade_response *out);
+
+#else
+
 // if buffer isn't large enough, the urc_error returns an internal CborError of type
 // ``CborErrorOutOfMemory``
 urc_error format_jaderequest(const jade_request *request, size_t size, uint8_t *out);
@@ -27,3 +36,5 @@ urc_error format_jaderequest(const jade_request *request, size_t size, uint8_t *
 // if buffer isn't large enough, the urc_error returns an internal CborError of type 
 // ``CborErrorOutOfMemory``
 urc_error parse_jaderesponse(size_t size, const uint8_t *buffer, jade_response *out);
+
+#endif
