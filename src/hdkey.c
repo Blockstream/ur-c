@@ -5,7 +5,6 @@
 #include <arpa/inet.h>
 #endif
 
-
 #include "urc/crypto_hdkey.h"
 #include "urc/tags.h"
 
@@ -630,46 +629,67 @@ bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN
 }
 
 int format_keyorigin(const crypto_hdkey *hdkey, size_t size, char *out) {
-    switch (hdkey->type) {
-    case hdkey_type_master:
-        return 0;
-    case hdkey_type_na:
-        return -1;
-    default:
-        break;
-    }
-
-    int len = 0;
-    uint32_t fpr = hdkey->key.derived.origin.source_fingerprint;
-    if (fpr == 0) {
-        fpr = hdkey->key.derived.parent_fingerprint;
-    }
-    len += snprintf(out, size, "[%x", fpr);
-    // either an error or an out-of-space
-    if (len < 0 || (size_t)len >= size) {
-        return len;
-    }
-    for (size_t idx = 0; idx < hdkey->key.derived.origin.components_count; idx++) {
-        const path_component *comp = &hdkey->key.derived.origin.components[idx];
-        switch (comp->type) {
-        case path_component_type_index:
-            if (comp->component.index.is_hardened) {
-                len += snprintf(&out[len], size - len, "/%d'", comp->component.index.index);
-            } else {
-                len += snprintf(&out[len], size - len, "/%d", comp->component.index.index);
+    int total_len = 0;
+    {
+        uint32_t fpr = 0;
+        switch (hdkey->type) {
+        case hdkey_type_master:
+            fpr = 0;
+            break;
+        case hdkey_type_derived:
+            fpr = hdkey->key.derived.origin.source_fingerprint;
+            if (fpr == 0) {
+                fpr = hdkey->key.derived.parent_fingerprint;
             }
             break;
         default:
             return -1;
         }
+        int len = snprintf(out, size, "[%08x", fpr);
+        total_len += len;
         // either an error or an out-of-space
-        if (len < 0 || (size_t)len >= size) {
-            return len;
+        if (len < 0 || (size_t)total_len >= size) {
+            return len < 0 ? len : total_len;
         }
     }
-    len += snprintf(&out[len], size - len, "]");
-    // it includes error or out-of-space cases
-    return len;
+    {
+        const path_component *comps = NULL;
+        size_t comps_count = 0;
+        switch (hdkey->type) {
+        case hdkey_type_master:
+            // no components
+            break;
+        case hdkey_type_derived:
+            comps = hdkey->key.derived.origin.components;
+            comps_count = hdkey->key.derived.origin.components_count;
+            break;
+        default:
+            return -1;
+        }
+        for (size_t idx = 0; idx < comps_count; idx++) {
+            const path_component *comp = &(comps[idx]);
+            int len = 0;
+            switch (comp->type) {
+            case path_component_type_index:
+                len = snprintf(&out[total_len], size - total_len, "/%d%s", comp->component.index.index,
+                               comp->component.index.is_hardened ? "'" : "");
+                break;
+            default:
+                return -1;
+            }
+            total_len += len;
+            // either an error or an out-of-space
+            if (len < 0 || (size_t)total_len >= size) {
+                return len < 0 ? len : total_len;
+            }
+        }
+    }
+    int len = snprintf(&out[total_len], size - total_len, "]");
+    if (len < 0) {
+        return len;
+    }
+    total_len += len;
+    return total_len;
 }
 
 int format_keyderivationpath(const crypto_hdkey *hdkey, size_t size, char *out) {
@@ -682,28 +702,29 @@ int format_keyderivationpath(const crypto_hdkey *hdkey, size_t size, char *out) 
         break;
     }
 
-    int len = 0;
+    int total_len = 0;
     for (size_t idx = 0; idx < hdkey->key.derived.children.components_count; idx++) {
         const path_component *comp = &hdkey->key.derived.children.components[idx];
+        int len = 0;
         switch (comp->type) {
         case path_component_type_index:
             if (comp->component.index.is_hardened) {
-                len += snprintf(&out[len], size - len, "/%d'", comp->component.index.index);
+                len = snprintf(&out[total_len], size - total_len, "/%d'", comp->component.index.index);
             } else {
-                len += snprintf(&out[len], size - len, "/%d", comp->component.index.index);
+                len = snprintf(&out[total_len], size - total_len, "/%d", comp->component.index.index);
             }
             break;
         case path_component_type_wildcard:
-            len += snprintf(&out[len], size - len, "/*");
+            len = snprintf(&out[total_len], size - total_len, "/*");
             break;
         default:
             return -1;
         }
-        // either an error or an out-of-space
-        if (len < 0 || (size_t)len >= size) {
-            return len; 
+        total_len += len;
+        if (len < 0 || (size_t)total_len >= size) {
+            return len < 0 ? len : total_len;
         }
     }
 
-    return len;
+    return total_len;
 }

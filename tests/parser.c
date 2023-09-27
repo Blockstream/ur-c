@@ -2,7 +2,10 @@
 #include "unity.h"
 #include "unity_fixture.h"
 
-#include "urc/jade_bip8539.h"
+#include "urc/crypto_account.h"
+#include "urc/crypto_hdkey.h"
+#include "urc/crypto_output.h"
+#include "urc/error.h"
 #include "urc/urc.h"
 
 #include "helpers.h"
@@ -13,6 +16,30 @@ TEST_GROUP(parser);
 
 TEST_SETUP(parser) {}
 TEST_TEAR_DOWN(parser) {}
+
+void test_format_key_origin(const crypto_hdkey *key, const char * expected) {
+    {
+        // buffer too short
+        char keypath[5];
+        int len = format_keyorigin(key, 2, (char *)&keypath);
+        TEST_ASSERT_GREATER_OR_EQUAL(5, len);
+        TEST_ASSERT_EQUAL(9, len);
+    }
+    {
+        // buffer too short
+        char keypath[10];
+        int len = format_keyorigin(key, 10, (char *)&keypath);
+        TEST_ASSERT_GREATER_OR_EQUAL(10, len);
+    }
+    {
+        char keypath[BUFSIZE];
+        int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
+        TEST_ASSERT_GREATER_THAN_INT(0, len);
+        TEST_ASSERT_LESS_THAN(BUFSIZE, len);
+        TEST_ASSERT_EQUAL_STRING(expected, keypath);
+    }
+
+}
 
 TEST(parser, crypto_seed_parse) {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#exampletest-vector-1
@@ -40,7 +67,7 @@ TEST(parser, crypto_psbt_parse) {
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_psbt psbt;
-    uint8_t buffer[BUFSIZE];
+    uint8_t buffer[1000];
     psbt.buffer = buffer;
     psbt.buffer_size = BUFSIZE;
     urc_error err = parse_psbt(len, raw, &psbt);
@@ -91,16 +118,8 @@ TEST(parser, crypto_hdkey_parse_1) {
                           0x2e, 0x72, 0x3d, 0xec, 0xf4, 0x05, 0x1a, 0xef, 0xac, 0x8e, 0x2c, 0x93, 0xc9, 0xc5, 0xb2, 0x14,
                           0x31, 0x38, 0x17, 0xcd, 0xb0, 0x1a, 0x14, 0x94, 0xb9, 0x17, 0xc8, 0x43, 0x6b, 0x35};
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
-    {
-        char keypath[BUFSIZE];
-        int len = format_keyorigin(&hdkey, BUFSIZE, (char *)&keypath);
-        TEST_ASSERT_EQUAL(0, len);
-    }
-    {
-        char trailing[BUFSIZE];
-        int len = format_keyderivationpath(&hdkey, BUFSIZE, (char *)&trailing);
-        TEST_ASSERT_EQUAL(0, len);
-    }
+
+    test_format_key_origin(&hdkey, "[00000000]");
 }
 
 TEST(parser, crypto_hdkey_parse_2) {
@@ -166,19 +185,12 @@ TEST(parser, crypto_hdkey_parse_2) {
                           0x35, 0x57, 0x45, 0xbb, 0x2d, 0xb3, 0x63, 0x0b, 0xbc, 0x80, 0xef, 0x5d, 0x58, 0x95, 0x1c, 0x96,
                           0x3c, 0x84, 0x1f, 0x54, 0x17, 0x0b, 0xa6, 0xe5, 0xc1, 0x2b, 0xe7, 0xfc, 0x12, 0xa6};
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
+
+    test_format_key_origin(&hdkey, "[e9181cf3/44'/1'/1'/0/1]");
     {
-        char keypath[BUFSIZE];
-        const char *expected = "[e9181cf3/44'/1'/1'/0/1]";
-        int len = format_keyorigin(&hdkey, BUFSIZE, (char *)&keypath);
-        TEST_ASSERT_GREATER_THAN_INT(0, len);
-        TEST_ASSERT_EQUAL_STRING(expected, keypath);
-    }
-    {
-        char trailing[BUFSIZE];
-        const char *expected = "[e9181cf3/44'/1'/1'/0/1]";
-        int len = format_keyderivationpath(&hdkey, BUFSIZE, (char *)&trailing);
+        char derivationpath[BUFSIZE];
+        int len = format_keyderivationpath(&hdkey, BUFSIZE, (char *)&derivationpath);
         TEST_ASSERT_EQUAL(0, len);
-        TEST_ASSERT_EQUAL_STRING(expected, trailing);
     }
 }
 
@@ -289,19 +301,14 @@ TEST(parser, crypto_output_parse_4) {
                           0xd0, 0xbc, 0xc8, 0xd5, 0xe8, 0x92, 0x61, 0x18, 0x06, 0xca, 0xfb, 0x03, 0x01, 0xf0};
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
+    test_format_key_origin(key, "[d34db33f/44'/0'/0']");
     {
-        char keypath[BUFSIZE];
-        const char *expected = "[d34db33f/44'/0'/0']";
-        int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-        TEST_ASSERT_GREATER_THAN_INT(0, len);
-        TEST_ASSERT_EQUAL_STRING(expected, keypath);
-    }
-    {
-        char trailing[BUFSIZE];
+        char derivationpath[BUFSIZE];
         const char *expected = "/1/*";
-        int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+        int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
         TEST_ASSERT_GREATER_THAN_INT(0, len);
-        TEST_ASSERT_EQUAL_STRING(expected, trailing);
+        TEST_ASSERT_LESS_THAN(BUFSIZE, len);
+        TEST_ASSERT_EQUAL_STRING(expected, derivationpath);
     }
 }
 
@@ -337,7 +344,7 @@ TEST(parser, crypto_account_parse) {
         "081a59b69b2ad90134d90199d9012fa403582102bbb97cf9efa176b738efd6ee1d4d0fa391a973394fbc16e4c5e78e536cd14d2d0458204b4693e1f7"
         "94206ed1355b838da24949a92b63d02e58910bf3bd3d9c242281e606d90130a201861856f500f500f5021a37b5eed4081acec7070c";
     uint8_t raw[BUFSIZE];
-    size_t len = h2b(hex, BUFSIZE, (uint8_t *)(&raw));
+    int len = h2b(hex, BUFSIZE, (uint8_t *)(&raw));
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_account account;
@@ -382,16 +389,11 @@ TEST(parser, crypto_account_parse) {
                               0x28, 0x63, 0x91, 0x18, 0x26, 0x37, 0x4d, 0xe8, 0x6c, 0x23, 0x1a, 0x4b, 0x76, 0xf0, 0xb8, 0x9d,
                               0xfa, 0x17, 0x4a, 0xfb, 0x78, 0xd7, 0xf4, 0x78, 0x19, 0x98, 0x84, 0xd9, 0xdd, 0x32};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
+
+        test_format_key_origin(key, "[37b5eed4/44'/0'/0']");
         {
-            char keypath[BUFSIZE];
-            const char *expected = "[37b5eed4/44'/0'/0']";
-            int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-            TEST_ASSERT_GREATER_THAN_INT(0, len);
-            TEST_ASSERT_EQUAL_STRING(expected, keypath);
-        }
-        {
-            char trailing[BUFSIZE];
-            int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+            char derivationpath[BUFSIZE];
+            int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
             TEST_ASSERT_EQUAL(0, len);
         }
     }
@@ -430,16 +432,11 @@ TEST(parser, crypto_account_parse) {
                               0x82, 0x37, 0x30, 0xf6, 0xee, 0x2c, 0xf8, 0x64, 0xe2, 0xc3, 0x52, 0x06, 0x0a, 0x88, 0xe6, 0x0b,
                               0x51, 0xa8, 0x4e, 0x89, 0xe4, 0xc8, 0xc7, 0x5e, 0xc2, 0x25, 0x90, 0xad, 0x6b, 0x69};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
+
+        test_format_key_origin(key, "[37b5eed4/49'/0'/0']");
         {
-            char keypath[BUFSIZE];
-            const char *expected = "[37b5eed4/49'/0'/0']";
-            int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-            TEST_ASSERT_GREATER_THAN_INT(0, len);
-            TEST_ASSERT_EQUAL_STRING(expected, keypath);
-        }
-        {
-            char trailing[BUFSIZE];
-            int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+            char derivationpath[BUFSIZE];
+            int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
             TEST_ASSERT_EQUAL(0, len);
         }
     }
@@ -478,16 +475,11 @@ TEST(parser, crypto_account_parse) {
                               0x34, 0x50, 0xb6, 0x92, 0x4b, 0x4f, 0x7e, 0xfd, 0xd5, 0xd1, 0xed, 0x01, 0x7d, 0x36, 0x4b, 0xe9,
                               0x5a, 0xb2, 0xb5, 0x92, 0xdc, 0x8b, 0xdd, 0xb3, 0xb0, 0x0c, 0x1c, 0x24, 0xf6, 0x3f};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
+
+        test_format_key_origin(key, "[37b5eed4/84'/0'/0']");
         {
-            char keypath[BUFSIZE];
-            const char *expected = "[37b5eed4/84'/0'/0']";
-            int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-            TEST_ASSERT_GREATER_THAN_INT(0, len);
-            TEST_ASSERT_EQUAL_STRING(expected, keypath);
-        }
-        {
-            char trailing[BUFSIZE];
-            int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+            char derivationpath[BUFSIZE];
+            int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
             TEST_ASSERT_EQUAL(0, len);
         }
     }
@@ -521,16 +513,10 @@ TEST(parser, crypto_account_parse) {
                               0x73, 0x21, 0x18, 0x80, 0xcb, 0x59, 0xb1, 0xef, 0x01, 0x2e, 0x16, 0x8e, 0x05, 0x9a};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
+        test_format_key_origin(key, "[37b5eed4/45']");
         {
-            char keypath[BUFSIZE];
-            const char *expected = "[37b5eed4/45']";
-            int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-            TEST_ASSERT_GREATER_THAN_INT(0, len);
-            TEST_ASSERT_EQUAL_STRING(expected, keypath);
-        }
-        {
-            char trailing[BUFSIZE];
-            int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+            char derivationpath[BUFSIZE];
+            int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
             TEST_ASSERT_EQUAL(0, len);
         }
     }
@@ -573,16 +559,11 @@ TEST(parser, crypto_account_parse) {
                               0xfb, 0x84, 0xcd, 0x5d, 0x6b, 0x26, 0x52, 0x69, 0x38, 0xf9, 0x0c, 0x05, 0x07, 0x11};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
+
+        test_format_key_origin(key, "[37b5eed4/48'/0'/0'/1']");
         {
-            char keypath[BUFSIZE];
-            const char *expected = "[37b5eed4/48'/0'/0'/1']";
-            int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-            TEST_ASSERT_GREATER_THAN_INT(0, len);
-            TEST_ASSERT_EQUAL_STRING(expected, keypath);
-        }
-        {
-            char trailing[BUFSIZE];
-            int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+            char derivationpath[BUFSIZE];
+            int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
             TEST_ASSERT_EQUAL(0, len);
         }
     }
@@ -624,16 +605,11 @@ TEST(parser, crypto_account_parse) {
                               0x3e, 0xe8, 0x0c, 0x26, 0x84, 0x46, 0x21, 0xb0, 0x6b, 0x74, 0x07, 0x0b, 0xaf, 0x0e, 0x23, 0xfb,
                               0x76, 0xce, 0x43, 0x9d, 0x02, 0x37, 0xe8, 0x75, 0x02, 0xeb, 0xbd, 0x3c, 0xa3, 0x46};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
+
+        test_format_key_origin(key, "[37b5eed4/48'/0'/0'/2']");
         {
-            char keypath[BUFSIZE];
-            const char *expected = "[37b5eed4/48'/0'/0'/2']";
-            int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-            TEST_ASSERT_GREATER_THAN_INT(0, len);
-            TEST_ASSERT_EQUAL_STRING(expected, keypath);
-        }
-        {
-            char trailing[BUFSIZE];
-            int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+            char derivationpath[BUFSIZE];
+            int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
             TEST_ASSERT_EQUAL(0, len);
         }
     }
@@ -678,16 +654,10 @@ TEST(parser, crypto_jadeaccount_parse) {
     TEST_ASSERT_EQUAL(0, key->key.derived.origin.components[2].component.index.index);
     TEST_ASSERT_TRUE(key->key.derived.origin.components[2].component.index.is_hardened);
 
+    test_format_key_origin(key, "[b6215d6b/84'/0'/0']");
     {
-        char keypath[BUFSIZE];
-        const char *expected = "[b6215d6b/84'/0'/0']";
-        int len = format_keyorigin(key, BUFSIZE, (char *)&keypath);
-        TEST_ASSERT_GREATER_THAN_INT(0, len);
-        TEST_ASSERT_EQUAL_STRING(expected, keypath);
-    }
-    {
-        char trailing[BUFSIZE];
-        int len = format_keyderivationpath(key, BUFSIZE, (char *)&trailing);
+        char derivationpath[BUFSIZE];
+        int len = format_keyderivationpath(key, BUFSIZE, (char *)&derivationpath);
         TEST_ASSERT_EQUAL(0, len);
     }
 }
