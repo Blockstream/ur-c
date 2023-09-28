@@ -1,0 +1,13 @@
+image: gcc:12-bookworm
+
+test:
+  stage: test
+  script:
+    - apt-get update -yqq
+    - apt-get install -yqq --no-install-recommends cmake
+    - cmake --preset dev
+    - cmake --build --preset dev
+    - ctest --output-junit report.xml --preset dev
+  artifacts:
+    reports:
+      junit: build/dev/report.xml
