@@ -93,7 +93,7 @@ if(NOT ENABLE_TESTS)
     return()
 endif()
 
-enable_testing()
+include(CTest)
 if (FETCH_DEPS)
     fetch_unity()
 else()

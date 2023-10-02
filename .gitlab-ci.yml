@@ -1,13 +1,20 @@
+---
 image: gcc:12-bookworm
 
 test:
   stage: test
   script:
     - apt-get update -yqq
-    - apt-get install -yqq --no-install-recommends cmake
+    - apt-get install -yqq cmake valgrind python3 python3-pip python3-virtualenv
     - cmake --preset dev
     - cmake --build --preset dev
     - ctest --output-junit report.xml --preset dev
+    - ctest -T memcheck --test-dir build/dev
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install valgrind-codequality
+    - valgrind-codequality --input-file build/valgrind.xml --output-file valgrind.json
   artifacts:
     reports:
       junit: build/dev/report.xml
+      codequality: valgrind.json
