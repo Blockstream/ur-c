@@ -1,7 +1,7 @@
 ---
-image: gcc:12-bookworm
 
 test:
+  image: gcc:12-bookworm
   stage: test
   script:
     - apt-get update -yqq
@@ -18,3 +18,14 @@ test:
     reports:
       junit: build/dev/report.xml
       codequality: valgrind.json
+
+
+fuzzy-test:
+  image: silkeh/clang:15-bookworm
+  stage: test
+  script:
+    - apt-get update -yqq
+    - apt-get install --no-install-recommends -yqq git cmake
+    - cmake --preset fuzzy
+    - cmake --build --preset fuzzy
+    - ctest --preset fuzzy -R fuzzy --output-on-failure

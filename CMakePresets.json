@@ -44,6 +44,34 @@
                     "value": "Debug"
                 }
             }
+        },
+        {
+            "name": "fuzzy",
+            "description": "Developer build",
+            "binaryDir": "${sourceDir}/build/fuzzy",
+            "installDir": "${sourceDir}/install/fuzzy",
+            "cacheVariables": {
+                "FETCH_DEPS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "ENABLE_TESTS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang"
+                },
+                "ENABLE_FUZZ_TESTS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
         }
     ],
     "buildPresets": [
@@ -56,12 +84,21 @@
             "name": "dev",
             "configurePreset": "dev",
             "jobs": 16
+        },
+        {
+            "name": "fuzzy",
+            "configurePreset": "fuzzy",
+            "jobs": 16
         }
     ],
     "testPresets": [
         {
             "name": "dev",
             "configurePreset": "dev"
+        },
+        {
+            "name": "fuzzy",
+            "configurePreset": "fuzzy"
         }
     ]
 }
