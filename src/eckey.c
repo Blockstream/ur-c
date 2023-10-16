@@ -35,6 +35,7 @@ urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
     if (is_map_key(&map_item, 1)) {
         ADVANCE(&map_item, result, exit);
         int curve_type;
+        CHECK_IS_TYPE(&map_item, integer, result, exit)
         err = cbor_value_get_int(&map_item, &curve_type);
         CHECK_CBOR_ERROR(err, result, exit);
         if (curve_type != 0) {
@@ -70,6 +71,7 @@ urc_error internal_parse_eckey(CborValue *iter, crypto_eckey *out) {
         out->type = eckey_type_private;
         goto leave_and_exit;
     }
+    CHECK_IS_TYPE(&map_item, byte_string, result, exit);
     size_t len;
     err = cbor_value_get_string_length(&map_item, &len);
     CHECK_CBOR_ERROR(err, result, exit);
