@@ -13,7 +13,7 @@ test:
     - virtualenv venv
     - source venv/bin/activate
     - pip install valgrind-codequality
-    - valgrind-codequality --input-file build/valgrind.xml --output-file valgrind.json
+    - valgrind-codequality --input-file build/dev/tests/valgrind.xml --output-file valgrind.json
   artifacts:
     reports:
       junit: build/dev/report.xml
