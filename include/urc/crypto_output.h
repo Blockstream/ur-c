@@ -44,4 +44,4 @@ typedef struct {
     } type;
 } crypto_output;
 
-urc_error parse_output(size_t size, const uint8_t *buffer, crypto_output *out);
+int urc_crypto_output_parse(const uint8_t *buffer, size_t len, crypto_output *out);

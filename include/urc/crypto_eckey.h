@@ -24,4 +24,4 @@ typedef struct {
     } type;
 } crypto_eckey;
 
-urc_error parse_eckey(size_t size, const uint8_t *buffer, crypto_eckey *out);
+int urc_crypto_eckey_parse(const uint8_t *buffer, size_t len, crypto_eckey *out);

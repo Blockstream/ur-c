@@ -18,6 +18,6 @@ typedef struct {
 // WARNING: taproot outpute descriptors are not yet supported
 // when a taproot descriptor is found, this function skips it, carries on and collects the other descriptors
 
-urc_error parse_account(size_t size, const uint8_t *buffer, crypto_account *out);
+int urc_crypto_account_parse(const uint8_t *buffer, size_t len, crypto_account *out);
 // parse an account in jade format, descriptors are not introduced by tag 308
-urc_error parse_jadeaccount(size_t size, const uint8_t *buffer, crypto_account *out);
+int urc_jade_account_parse(const uint8_t *buffer, size_t len, crypto_account *out);

@@ -9,22 +9,21 @@
 #include "macros.h"
 #include "utils.h"
 
-urc_error internal_parse_keyexp(CborValue *iter, output_keyexp *out);
+int urc_crypto_outpute_keyexp_parse(CborValue *iter, output_keyexp *out);
 
-urc_error parse_output(size_t size, const uint8_t *buffer, crypto_output *out) {
+int urc_crypto_output_parse(const uint8_t *buffer, size_t len, crypto_output *out) {
     CborParser parser;
     CborValue iter;
     CborError err;
-    err = cbor_parser_init(buffer, size, cbor_flags, &parser, &iter);
+    err = cbor_parser_init(buffer, len, cbor_flags, &parser, &iter);
     if (err != CborNoError) {
-        urc_error result = {.tag = urc_error_tag_cborinternalerror, .internal.cbor = err};
-        return result;
+        return  URC_ECBORINTERNALERROR;
     }
-    return internal_parse_output(&iter, out);
+    return urc_crypto_output_parse_impl(&iter, out);
 }
 
-urc_error internal_parse_output(CborValue *iter, crypto_output *out) {
-    urc_error result = {.tag = urc_error_tag_noerror};
+int urc_crypto_output_parse_impl(CborValue *iter, crypto_output *out) {
+    int result = URC_OK;
     out->type = output_type_na;
 
     CHECK_IS_TYPE(iter, tag, result, exit);
@@ -40,16 +39,16 @@ urc_error internal_parse_output(CborValue *iter, crypto_output *out) {
             ADVANCE(iter, result, exit);
             output_type = output_type_sh_wsh;
         }
-        result = internal_parse_keyexp(iter, &out->output.key);
-        if (result.tag != urc_error_tag_noerror) {
+        result = urc_crypto_outpute_keyexp_parse(iter, &out->output.key);
+        if (result != URC_OK) {
             goto exit;
         }
         out->type = output_type;
         break;
     case urc_urtypes_tags_output_wsh:
         ADVANCE(iter, result, exit);
-        result = internal_parse_keyexp(iter, &out->output.key);
-        if (result.tag != urc_error_tag_noerror) {
+        result = urc_crypto_outpute_keyexp_parse(iter, &out->output.key);
+        if (result != URC_OK) {
             goto exit;
         }
         out->type = output_type_wsh;
@@ -57,19 +56,19 @@ urc_error internal_parse_output(CborValue *iter, crypto_output *out) {
     case urc_urtypes_tags_output_rawscript:
         ADVANCE(iter, result, exit);
         result = copy_fixed_size_byte_string(iter, (uint8_t *)out->output.raw, 32);
-        if (result.tag != urc_error_tag_noerror) {
+        if (result != URC_OK) {
             goto exit;
         }
         out->type = output_type_rawscript;
         break;
     case urc_urtypes_tags_output_taproot:
-        result.tag = urc_error_tag_taprootnotsupported;
+        result = URC_ETAPROOTNOTSUPPORTED;
         goto exit;
 
         break;
     default:
-        result = internal_parse_keyexp(iter, &out->output.key);
-        if (result.tag != urc_error_tag_noerror) {
+        result = urc_crypto_outpute_keyexp_parse(iter, &out->output.key);
+        if (result != URC_OK) {
             goto exit;
         }
         out->type = output_type__;
@@ -79,8 +78,8 @@ exit:
     return result;
 }
 
-urc_error internal_parse_keyexp(CborValue *iter, output_keyexp *out) {
-    urc_error result = {.tag = urc_error_tag_noerror};
+int urc_crypto_outpute_keyexp_parse(CborValue *iter, output_keyexp *out) {
+    int result = URC_OK;
     out->keytype = keyexp_keytype_na;
 
     CHECK_IS_TYPE(iter, tag, result, exit);
@@ -103,7 +102,7 @@ urc_error internal_parse_keyexp(CborValue *iter, output_keyexp *out) {
         out->type = keyexp_type_cosigner;
         break;
     default:
-        result.tag = urc_error_tag_unhandledcase;
+        result = URC_EUNHANDLEDCASE;
         goto exit;
     }
 
@@ -113,22 +112,22 @@ urc_error internal_parse_keyexp(CborValue *iter, output_keyexp *out) {
 
     switch (tag) {
     case urc_urtypes_tags_crypto_eckey:
-        result = internal_parse_eckey(iter, &out->key.eckey);
-        if (result.tag != urc_error_tag_noerror) {
+        result = urc_crypto_eckey_parse_impl(iter, &out->key.eckey);
+        if (result != URC_OK) {
             goto exit;
         }
         out->keytype = keyexp_keytype_eckey;
         break;
     case urc_urtypes_tags_crypto_hdkey:
-        result = internal_parse_hdkey(iter, &out->key.hdkey);
-        if (result.tag != urc_error_tag_noerror) {
+        result = urc_crypto_hdkey_parse_impl(iter, &out->key.hdkey);
+        if (result != URC_OK) {
             goto exit;
         }
         out->keytype = keyexp_keytype_hdkey;
 
         break;
     default:
-        result.tag = urc_error_tag_wrongtag;
+        result = URC_EUNEXPECTEDTAG;
     }
 
 exit:

@@ -2,25 +2,25 @@
 #include "urc/crypto_psbt.h"
 
 #include "macros.h"
+#include "urc/error.h"
 #include "utils.h"
 
-urc_error internal_parse_psbt(CborValue *iter, crypto_psbt *out);
+int urc_crypto_psbt_parse_impl(CborValue *iter, crypto_psbt *out);
 
-urc_error parse_psbt(size_t size, const uint8_t *buffer, crypto_psbt *out) {
+int urc_crypto_psbt_parse(const uint8_t *buffer, size_t len, crypto_psbt *out) {
     CborParser parser;
     CborValue iter;
     CborError err;
-    err = cbor_parser_init(buffer, size, cbor_flags, &parser, &iter);
+    err = cbor_parser_init(buffer, len, cbor_flags, &parser, &iter);
     if (err != CborNoError) {
-        urc_error result = {.tag = urc_error_tag_cborinternalerror, .internal.cbor = err};
-        return result;
+        return URC_ECBORINTERNALERROR;
     }
-    return internal_parse_psbt(&iter, out);
+    return urc_crypto_psbt_parse_impl(&iter, out);
 }
 
-urc_error internal_parse_psbt(CborValue *iter, crypto_psbt *out) {
+int urc_crypto_psbt_parse_impl(CborValue *iter, crypto_psbt *out) {
     out->psbt_len = 0;
-    urc_error result = {.tag = urc_error_tag_noerror};
+    int result = URC_OK;
 
     CHECK_IS_TYPE(iter, byte_string, result, exit)
     size_t len;
@@ -28,8 +28,7 @@ urc_error internal_parse_psbt(CborValue *iter, crypto_psbt *out) {
     CHECK_CBOR_ERROR(err, result, exit);
 
     if (out->buffer_size < len) {
-        result.tag = urc_error_tag_wrongstringlength;
-        return result;
+        return URC_EUNEXPECTEDSTRINGLENGTH;
     }
 
     len = out->buffer_size;

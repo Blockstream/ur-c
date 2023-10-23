@@ -3,12 +3,10 @@
 #include "urc/error.h"
 #include "urc/jade_bip8539.h"
 
-#include "macros2.h"
+#include "macros.h"
 #include "utils.h"
 
 static int jade_bip8539_request_format_impl(CborEncoder *encoder, const jade_bip8539_request *request) {
-    int result = URC_OK;
-
     CborError err;
     CborEncoder map;
     err = cbor_encoder_create_map(encoder, &map, 3);
@@ -28,10 +26,11 @@ static int jade_bip8539_request_format_impl(CborEncoder *encoder, const jade_bip
         err = cbor_encoder_close_container(encoder, &map);
 
     if (err == CborErrorOutOfMemory)
-        result = URC_EBUFFERTOOSMALL;
+        return URC_EBUFFERTOOSMALL;
     else if (err != CborNoError)
-        result = URC_ECBORINTERNALERROR;
-    return result;
+        return URC_ECBORINTERNALERROR;
+
+    return URC_OK;
 }
 
 static int jade_bip8539_response_parse_impl(CborValue *iter, jade_bip8539_response *out, uint8_t *buffer, size_t len) {
@@ -49,7 +48,7 @@ static int jade_bip8539_response_parse_impl(CborValue *iter, jade_bip8539_respon
         goto exit;
     }
     CHECK_IS_TYPE(&element, byte_string, result, exit);
-    result = copy_fixed_size_byte_string2(&element, (uint8_t *)&out->pubkey, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE);
+    result = copy_fixed_size_byte_string(&element, (uint8_t *)&out->pubkey, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE);
     if (result != URC_OK) {
         goto exit;
     }

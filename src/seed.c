@@ -6,22 +6,22 @@
 #include "macros.h"
 #include "utils.h"
 
-urc_error internal_parse_seed(CborValue *iter, crypto_seed *out);
+int internal_parse_seed(CborValue *iter, crypto_seed *out);
 
-urc_error parse_seed(size_t size, const uint8_t *buffer, crypto_seed *out) {
+int urc_crypto_seed_parse(const uint8_t *buffer, size_t len, crypto_seed *out) {
     CborParser parser;
     CborValue iter;
     CborError err;
-    err = cbor_parser_init(buffer, size, cbor_flags, &parser, &iter);
+    err = cbor_parser_init(buffer, len, cbor_flags, &parser, &iter);
     if (err != CborNoError) {
-        urc_error result = {.tag = urc_error_tag_cborinternalerror, .internal.cbor = err};
+        int result = URC_ECBORINTERNALERROR;
         return result;
     }
     return internal_parse_seed(&iter, out);
 }
 
-urc_error internal_parse_seed(CborValue *iter, crypto_seed *out) {
-    urc_error result = {.tag = urc_error_tag_noerror};
+int internal_parse_seed(CborValue *iter, crypto_seed *out) {
+    int result = URC_OK;
 
     CHECK_IS_TYPE(iter, map, result, exit);
 
@@ -31,14 +31,14 @@ urc_error internal_parse_seed(CborValue *iter, crypto_seed *out) {
     CHECK_CBOR_ERROR(err, result, exit);
 
     result = check_map_key(&item, 1);
-    if (result.tag != urc_error_tag_noerror) {
+    if (result != URC_OK) {
         goto exit;
     }
 
     ADVANCE(&item, result, exit);
 
     result = copy_fixed_size_byte_string(&item, out->seed, CRYPTO_SEED_SIZE);
-    if (result.tag != urc_error_tag_noerror) {
+    if (result != URC_OK) {
         goto exit;
     }
 
@@ -49,14 +49,14 @@ urc_error internal_parse_seed(CborValue *iter, crypto_seed *out) {
     ADVANCE(&item, result, exit);
 
     result = check_map_key(&item, 2);
-    if (result.tag != urc_error_tag_noerror) {
+    if (result != URC_OK) {
         goto exit;
     }
 
     ADVANCE(&item, result, exit);
 
     result = check_tag(&item, 100); // TODO: check whether this is an official RFC 8949 tag or what
-    if (result.tag != urc_error_tag_noerror) {
+    if (result != URC_OK) {
         goto exit;
     }
 

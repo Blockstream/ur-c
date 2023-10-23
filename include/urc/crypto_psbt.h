@@ -12,4 +12,4 @@ typedef struct {
 
 } crypto_psbt;
 
-urc_error parse_psbt(size_t size, const uint8_t *buffer, crypto_psbt *out);
+int urc_crypto_psbt_parse(const uint8_t *buffer, size_t len, crypto_psbt *out);

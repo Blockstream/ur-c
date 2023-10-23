@@ -11,4 +11,4 @@ typedef struct {
 
 } crypto_seed;
 
-urc_error parse_seed(size_t size, const uint8_t *buffer, crypto_seed *out);
+int urc_crypto_seed_parse(const uint8_t *buffer, size_t len, crypto_seed *out);

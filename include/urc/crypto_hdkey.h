@@ -104,12 +104,12 @@ typedef struct {
     } type;
 } crypto_hdkey;
 
-urc_error parse_hdkey(size_t size, const uint8_t *buffer, crypto_hdkey *out);
+int urc_crypto_hdkey_parse(const uint8_t *buffer, size_t len, crypto_hdkey *out);
 #define BIP32_SERIALIZED_LEN 78
 bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN]);
 // return values of following functions follow the snprintf convention:
 // any value >= of size means that the output has been truncated
 // any value >= 0 indicates the number of characters written to ``out`` buffer (excluding the null-terminator)
 // otherwise, any value <0 means an error occurred
-int format_keyorigin(const crypto_hdkey *hdkey, size_t size, char *out);
-int format_keyderivationpath(const crypto_hdkey *hdkey, size_t size, char *out);
+int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t len);
+int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t len);
