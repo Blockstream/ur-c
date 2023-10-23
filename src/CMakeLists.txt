@@ -32,3 +32,7 @@ target_include_directories(
 )
 set_target_properties(urc PROPERTIES PUBLIC_HEADER "${urc_headers}" C_STANDARD 11)
 target_compile_options(urc PRIVATE -Wall -Wextra -Wpedantic -Werror)
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    target_compile_options(urc PRIVATE --coverage)
+    target_link_options(urc PUBLIC --coverage)
+endif()

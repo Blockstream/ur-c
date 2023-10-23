@@ -9,15 +9,20 @@ test:
     - cmake --preset dev
     - cmake --build --preset dev
     - ctest --output-junit report.xml --preset dev
-    - ctest -T memcheck --test-dir build/dev
     - virtualenv venv
     - source venv/bin/activate
-    - pip install valgrind-codequality
+    - pip install valgrind-codequality gcovr
+    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+    - ctest -T memcheck --test-dir build/dev
     - valgrind-codequality --input-file build/dev/tests/valgrind.xml --output-file valgrind.json
+  coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
     reports:
       junit: build/dev/report.xml
       codequality: valgrind.json
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 
 fuzzy-test:
