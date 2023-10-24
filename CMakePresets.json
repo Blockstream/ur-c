@@ -15,10 +15,6 @@
                     "type": "BOOL",
                     "value": "ON"
                 },
-                "ENABLE_TESTS": {
-                    "type": "BOOL",
-                    "value": "ON"
-                },
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
                     "value": "Release"
