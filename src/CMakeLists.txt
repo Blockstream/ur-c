@@ -13,17 +13,7 @@ add_library(
     utils.c
     utils.h
 )
-set(urc_headers
-    ${CMAKE_SOURCE_DIR}/include/urc/urc.h
-    ${CMAKE_SOURCE_DIR}/include/urc/error.h
-    ${CMAKE_SOURCE_DIR}/include/urc/tags.h
-    ${CMAKE_SOURCE_DIR}/include/urc/crypto_account.h
-    ${CMAKE_SOURCE_DIR}/include/urc/crypto_eckey.h
-    ${CMAKE_SOURCE_DIR}/include/urc/crypto_hdkey.h
-    ${CMAKE_SOURCE_DIR}/include/urc/jade_bip8539.h
-    ${CMAKE_SOURCE_DIR}/include/urc/crypto_psbt.h
-    ${CMAKE_SOURCE_DIR}/include/urc/crypto_seed.h
-)
+file(GLOB urc_headers ${CMAKE_SOURCE_DIR}/include/urc/*.h)
 target_sources(urc PRIVATE ${urc_headers})
 target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)
 target_include_directories(
