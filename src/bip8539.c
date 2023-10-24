@@ -66,11 +66,17 @@ exit:
     return result;
 }
 
-int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t *out, size_t len) {
+int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t *out, size_t *len) {
     CborEncoder encoder;
-    cbor_encoder_init(&encoder, out, len, 0);
+    cbor_encoder_init(&encoder, out, *len, 0);
 
-    return jade_bip8539_request_format_impl(&encoder, request);
+    int result = jade_bip8539_request_format_impl(&encoder, request);
+    if (result == URC_OK) {
+        *len = cbor_encoder_get_buffer_size(&encoder, out);
+    } else {
+        *len = 0;
+    }
+    return result;
 }
 
 int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response, uint8_t *buffer,

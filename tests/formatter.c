@@ -25,7 +25,8 @@ TEST(formatter, jaderequest_format) {
     TEST_ASSERT_EQUAL(CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, len);
 
     uint8_t buffer[BUFLEN];
-    int err = urc_jade_bip8539_request_format(&request, buffer, BUFLEN);
+    size_t buflen = BUFLEN;
+    int err = urc_jade_bip8539_request_format(&request, buffer, &buflen);
     TEST_ASSERT_EQUAL(URC_OK, err);
     const char *expected = "a3696e756d5f776f726473181865696e646578190400667075626b65795821037aa2120135ae201c0586ad9f450ad3f4641dd"
                            "abcd9bd3e692944d9d8fd8ed8d2";
@@ -34,6 +35,7 @@ TEST(formatter, jaderequest_format) {
     len = h2b(expected, strlen(expected), bufferexpected);
     TEST_ASSERT_GREATER_THAN(0, len);
 
+    TEST_ASSERT_EQUAL(len, buflen);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(bufferexpected, buffer, len);
 }
 
@@ -46,6 +48,8 @@ TEST(formatter, jaderequest_format_smallbuffer) {
     TEST_ASSERT_EQUAL(CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, len);
 
     uint8_t buffer[SMALLBUFLEN];
-    int err = urc_jade_bip8539_request_format(&request, buffer, SMALLBUFLEN);
+    size_t buflen = SMALLBUFLEN;
+    int err = urc_jade_bip8539_request_format(&request, buffer, &buflen);
     TEST_ASSERT_EQUAL(URC_EBUFFERTOOSMALL, err);
+    TEST_ASSERT_EQUAL(0, buflen);
 }
