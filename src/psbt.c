@@ -28,7 +28,7 @@ int urc_crypto_psbt_parse_impl(CborValue *iter, crypto_psbt *out) {
     CHECK_CBOR_ERROR(err, result, exit);
 
     if (out->buffer_size < len) {
-        return URC_EUNEXPECTEDSTRINGLENGTH;
+        return URC_EBUFFERTOOSMALL;
     }
 
     len = out->buffer_size;
