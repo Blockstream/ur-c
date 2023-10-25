@@ -1,4 +1,7 @@
 
+#include <string.h>
+#include <valgrind/memcheck.h>
+
 #include "unity.h"
 #include "unity_fixture.h"
 
@@ -17,28 +20,28 @@ TEST_GROUP(parser);
 TEST_SETUP(parser) {}
 TEST_TEAR_DOWN(parser) {}
 
-void test_format_key_origin(const crypto_hdkey *key, const char * expected) {
-    {
-        // buffer too short
-        char keypath[5];
-        int len = format_keyorigin(key, (char *)&keypath, 5);
-        TEST_ASSERT_GREATER_OR_EQUAL(5, len);
-        TEST_ASSERT_EQUAL(9, len);
-    }
-    {
+void test_format_key_origin(const crypto_hdkey *key, const char *expected) {
+    size_t expected_len = strnlen(expected, BUFLEN);
+    char keypath[BUFLEN];
+    if (RUNNING_ON_VALGRIND) {
+        for (size_t i = 0; i < expected_len; i++) {
+            VALGRIND_MAKE_MEM_UNDEFINED(keypath, i);
+            VALGRIND_MAKE_MEM_NOACCESS(&keypath[i], BUFLEN - i);
+            int len = format_keyorigin(key, (char *)keypath, i);
+            TEST_ASSERT_GREATER_OR_EQUAL(i, len);
+        }
+        VALGRIND_MAKE_MEM_UNDEFINED(keypath, BUFLEN);
+    } else {
         // buffer too short
         char keypath[10];
-        int len = format_keyorigin(key, (char *)&keypath, 10);
+        int len = format_keyorigin(key, (char *)keypath, 10);
         TEST_ASSERT_GREATER_OR_EQUAL(10, len);
     }
-    {
-        char keypath[BUFSIZE];
-        int len = format_keyorigin(key, (char *)&keypath, BUFSIZE);
-        TEST_ASSERT_GREATER_THAN_INT(0, len);
-        TEST_ASSERT_LESS_THAN(BUFSIZE, len);
-        TEST_ASSERT_EQUAL_STRING(expected, keypath);
-    }
 
+    int len = format_keyorigin(key, (char *)keypath, BUFLEN);
+    TEST_ASSERT_GREATER_THAN_INT(0, len);
+    TEST_ASSERT_EQUAL(expected_len, len);
+    TEST_ASSERT_EQUAL_STRING(expected, keypath);
 }
 
 TEST(parser, crypto_seed_parse) {

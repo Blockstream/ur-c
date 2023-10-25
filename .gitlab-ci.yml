@@ -30,7 +30,7 @@ fuzzy-test:
   stage: test
   script:
     - apt-get update -yqq
-    - apt-get install --no-install-recommends -yqq git cmake
+    - apt-get install --no-install-recommends -yqq git cmake valgrind
     - cmake --preset fuzzy
     - cmake --build --preset fuzzy
     - ctest --preset fuzzy -R fuzzy --output-on-failure
