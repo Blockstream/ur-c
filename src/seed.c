@@ -2,6 +2,7 @@
 #include "cbor.h"
 
 #include "urc/crypto_seed.h"
+#include "urc/tags.h"
 
 #include "macros.h"
 #include "utils.h"
@@ -55,7 +56,7 @@ int internal_parse_seed(CborValue *iter, crypto_seed *out) {
 
     ADVANCE(&item, result, exit);
 
-    result = check_tag(&item, 100); // TODO: check whether this is an official RFC 8949 tag or what
+    result = check_tag(&item, CborNumberOfDaysSinceTheEpochDate19700101Tag);
     if (result != URC_OK) {
         goto exit;
     }

@@ -29,10 +29,11 @@ typedef struct {
 } output_keyexp;
 
 
+#define URC_RAWSCRIPT_LEN 32
 typedef struct {
     union {
         output_keyexp key;           // p2pkh
-        uint8_t raw[32];
+        uint8_t raw[URC_RAWSCRIPT_LEN];
     } output;
     enum {
         output_type_na,

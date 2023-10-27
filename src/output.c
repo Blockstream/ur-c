@@ -55,7 +55,7 @@ int urc_crypto_output_parse_impl(CborValue *iter, crypto_output *out) {
         break;
     case urc_urtypes_tags_output_rawscript:
         ADVANCE(iter, result, exit);
-        result = copy_fixed_size_byte_string(iter, (uint8_t *)out->output.raw, 32);
+        result = copy_fixed_size_byte_string(iter, (uint8_t *)out->output.raw, URC_RAWSCRIPT_LEN);
         if (result != URC_OK) {
             goto exit;
         }

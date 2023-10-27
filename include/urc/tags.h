@@ -22,3 +22,9 @@ typedef enum {
     urc_urtypes_tags_output_cosigner = 410,
 } urc_tagged_types;
 
+// WARNING: this is going to be deprecated once
+// https://github.com/intel/tinycbor/pull/241 is merged
+typedef enum {
+    CborNumberOfDaysSinceTheEpochDate19700101Tag = 100,
+} URCCborKnowTags;
+

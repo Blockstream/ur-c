@@ -27,7 +27,7 @@ static int jade_bip8539_request_format_impl(CborEncoder *encoder, const jade_bip
 
     if (err == CborErrorOutOfMemory)
         return URC_EBUFFERTOOSMALL;
-    else if (err != CborNoError)
+    if (err != CborNoError)
         return URC_ECBORINTERNALERROR;
 
     return URC_OK;
