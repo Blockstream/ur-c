@@ -61,7 +61,7 @@ static int jade_bip8539_response_parse_impl(CborValue *iter, jade_bip8539_respon
     CHECK_CBOR_ERROR(err, result, exit);
 
     out->encrypted_len = len;
-    out->encripted_data = buffer;
+    out->encrypted_data = buffer;
 exit:
     return result;
 }

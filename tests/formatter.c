@@ -1,12 +1,12 @@
 
+#include <string.h>
+
 #include "unity.h"
 #include "unity_fixture.h"
 
-#include "urc/jade_bip8539.h"
 #include "urc/urc.h"
 
 #include "helpers.h"
-#include <cbor.h>
 
 #define BUFLEN 1000
 #define SMALLBUFLEN 20

@@ -683,6 +683,6 @@ TEST(parser, jaderesponse_parse) {
     TEST_ASSERT_EQUAL_HEX(0x83, response.pubkey[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
 
     TEST_ASSERT_EQUAL(96, response.encrypted_len);
-    TEST_ASSERT_EQUAL_HEX(0x6e, response.encripted_data[0]);
-    TEST_ASSERT_EQUAL_HEX(0x34, response.encripted_data[response.encrypted_len - 1]);
+    TEST_ASSERT_EQUAL_HEX(0x6e, response.encrypted_data[0]);
+    TEST_ASSERT_EQUAL_HEX(0x34, response.encrypted_data[response.encrypted_len - 1]);
 }

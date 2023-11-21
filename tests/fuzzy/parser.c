@@ -1,10 +1,3 @@
-
-#include "internals.h"
-#include "urc/crypto_account.h"
-#include "urc/crypto_hdkey.h"
-#include "urc/crypto_output.h"
-#include "urc/crypto_psbt.h"
-#include "urc/crypto_seed.h"
 #include "urc/urc.h"
 
 #define BUFSIZE 1000

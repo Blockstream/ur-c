@@ -9,7 +9,7 @@
 #include "macros.h"
 #include "utils.h"
 
-int urc_crypto_outpute_keyexp_parse(CborValue *iter, output_keyexp *out);
+int urc_crypto_output_keyexp_parse(CborValue *iter, output_keyexp *out);
 
 int urc_crypto_output_parse(const uint8_t *buffer, size_t len, crypto_output *out) {
     CborParser parser;
@@ -39,7 +39,7 @@ int urc_crypto_output_parse_impl(CborValue *iter, crypto_output *out) {
             ADVANCE(iter, result, exit);
             output_type = output_type_sh_wsh;
         }
-        result = urc_crypto_outpute_keyexp_parse(iter, &out->output.key);
+        result = urc_crypto_output_keyexp_parse(iter, &out->output.key);
         if (result != URC_OK) {
             goto exit;
         }
@@ -47,7 +47,7 @@ int urc_crypto_output_parse_impl(CborValue *iter, crypto_output *out) {
         break;
     case urc_urtypes_tags_output_wsh:
         ADVANCE(iter, result, exit);
-        result = urc_crypto_outpute_keyexp_parse(iter, &out->output.key);
+        result = urc_crypto_output_keyexp_parse(iter, &out->output.key);
         if (result != URC_OK) {
             goto exit;
         }
@@ -67,7 +67,7 @@ int urc_crypto_output_parse_impl(CborValue *iter, crypto_output *out) {
 
         break;
     default:
-        result = urc_crypto_outpute_keyexp_parse(iter, &out->output.key);
+        result = urc_crypto_output_keyexp_parse(iter, &out->output.key);
         if (result != URC_OK) {
             goto exit;
         }
@@ -78,7 +78,7 @@ exit:
     return result;
 }
 
-int urc_crypto_outpute_keyexp_parse(CborValue *iter, output_keyexp *out) {
+int urc_crypto_output_keyexp_parse(CborValue *iter, output_keyexp *out) {
     int result = URC_OK;
     out->keytype = keyexp_keytype_na;
 
