@@ -19,16 +19,11 @@ TEST_GROUP_RUNNER(parser) {
 
 TEST_GROUP_RUNNER(formatter) {
     RUN_TEST_CASE(formatter, jaderequest_format);
-    RUN_TEST_CASE(formatter, jaderequest_format_smallbuffer)
 }
 
-static void RunAllTests(void)
-{
-  RUN_TEST_GROUP(parser);
-  RUN_TEST_GROUP(formatter);
+static void RunAllTests(void) {
+    RUN_TEST_GROUP(parser);
+    RUN_TEST_GROUP(formatter);
 }
 
-int main(int argc, const char * argv[])
-{
-  return UnityMain(argc, argv, RunAllTests);
-}
+int main(int argc, const char *argv[]) { return UnityMain(argc, argv, RunAllTests); }

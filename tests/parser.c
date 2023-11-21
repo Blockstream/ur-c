@@ -4,11 +4,8 @@
 
 #include "unity.h"
 #include "unity_fixture.h"
+#include "wally_core.h"
 
-#include "urc/crypto_account.h"
-#include "urc/crypto_hdkey.h"
-#include "urc/crypto_output.h"
-#include "urc/error.h"
 #include "urc/urc.h"
 
 #include "helpers.h"
@@ -123,6 +120,14 @@ TEST(parser, crypto_hdkey_parse_1) {
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
     test_format_key_origin(&hdkey, "[00000000]");
+    {
+        char *out;
+        err = urc_bip32_tobase58(&hdkey, &out);
+        TEST_ASSERT_EQUAL(URC_OK, err);
+        const char *expected = "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi";
+        TEST_ASSERT_EQUAL_STRING(expected, out);
+        urc_string_free(out);
+    }
 }
 
 TEST(parser, crypto_hdkey_parse_2) {
@@ -194,6 +199,14 @@ TEST(parser, crypto_hdkey_parse_2) {
         char derivationpath[BUFLEN];
         int len = format_keyderivationpath(&hdkey, (char *)&derivationpath, BUFLEN);
         TEST_ASSERT_EQUAL(0, len);
+    }
+    {
+        char *out;
+        err = urc_bip32_tobase58(&hdkey, &out);
+        TEST_ASSERT_EQUAL(URC_OK, err);
+        const char *expected = "tpubDHW3GtnVrTatx38EcygoSf9UhUd9Dx1rht7FAL8unrMo8r2NWhJuYNqDFS7cZFVbDaxJkV94MLZAr86XFPsAPYcoHWJ7sWYsrmHDw5sKQ2K";
+        TEST_ASSERT_EQUAL_STRING(expected, out);
+        urc_string_free(out);
     }
 }
 
@@ -313,6 +326,14 @@ TEST(parser, crypto_output_parse_4) {
         TEST_ASSERT_LESS_THAN(BUFLEN, len);
         TEST_ASSERT_EQUAL_STRING(expected, derivationpath);
     }
+    {
+        char *out;
+        err = urc_bip32_tobase58(key, &out);
+        TEST_ASSERT_EQUAL(URC_OK, err);
+        const char *expected = "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL";
+        TEST_ASSERT_EQUAL_STRING(expected, out);
+        urc_string_free(out);
+    }
 }
 
 TEST(parser, crypto_output_parse_5) {
@@ -399,6 +420,14 @@ TEST(parser, crypto_account_parse) {
             int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
             TEST_ASSERT_EQUAL(0, len);
         }
+        {
+            char *out;
+            err = urc_bip32_tobase58(key, &out);
+            TEST_ASSERT_EQUAL(URC_OK, err);
+            const char *expected = "xpub6CnQkivUEH9bSbWVWfDLCtigKKgnSWGaVSRyCbN2QNBJzuvHT1vUQpgSpY1NiVvoeNEuVwk748Cn9G3NtbQB1aGGsEL7aYEnjVWgjj9tefu";
+            TEST_ASSERT_EQUAL_STRING(expected, out);
+            urc_string_free(out);
+        }
     }
     {
         crypto_output *output = &account.descriptors[1];
@@ -441,6 +470,14 @@ TEST(parser, crypto_account_parse) {
             char derivationpath[BUFLEN];
             int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
             TEST_ASSERT_EQUAL(0, len);
+        }
+        {
+            char *out;
+            err = urc_bip32_tobase58(key, &out);
+            TEST_ASSERT_EQUAL(URC_OK, err);
+            const char *expected = "xpub6CtR1iF4dZPkEyXDwVf3HE74tSwXNMcHtBzX4gwz2UnPhJ54Jz5unHx2syYCCDkvVUmsmoYTmcaHXe1wJppvct4GMMaN5XAbRk7yGScRSte";
+            TEST_ASSERT_EQUAL_STRING(expected, out);
+            urc_string_free(out);
         }
     }
     {
@@ -485,6 +522,14 @@ TEST(parser, crypto_account_parse) {
             int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
             TEST_ASSERT_EQUAL(0, len);
         }
+        {
+            char *out;
+            err = urc_bip32_tobase58(key, &out);
+            TEST_ASSERT_EQUAL(URC_OK, err);
+            const char *expected = "xpub6BkU445MSEBXbPjD3g2c2ch6mn8yy1SXXQUM7EwjgYiq6Wt1NDwDZ45npqWcV8uQC5oi2gHuVukoCoZZyT4HKq8EpotPMqGqxdZRuapCQ23";
+            TEST_ASSERT_EQUAL_STRING(expected, out);
+            urc_string_free(out);
+        }
     }
     {
         crypto_output *output = &account.descriptors[3];
@@ -521,6 +566,14 @@ TEST(parser, crypto_account_parse) {
             char derivationpath[BUFLEN];
             int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
             TEST_ASSERT_EQUAL(0, len);
+        }
+        {
+            char *out;
+            err = urc_bip32_tobase58(key, &out);
+            TEST_ASSERT_EQUAL(URC_OK, err);
+            const char *expected = "xpub68JFLJTH96GUqC6SoVw5c2qyLSt776PGu5xde8ddVACuPYyarvSL827TbZGavuNbKQ8DG3VP9fCXPhQRBgPrS4MPG3zaZgwAGuPHYvVuY9X";
+            TEST_ASSERT_EQUAL_STRING(expected, out);
+            urc_string_free(out);
         }
     }
     {
@@ -568,6 +621,14 @@ TEST(parser, crypto_account_parse) {
             int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
             TEST_ASSERT_EQUAL(0, len);
         }
+        {
+            char *out;
+            err = urc_bip32_tobase58(key, &out);
+            TEST_ASSERT_EQUAL(URC_OK, err);
+            const char *expected = "xpub6EC9f7mLFJQoPaqDJ72Zbv67JWzmpXvCYQSecER9GzkYy5eWLsVLbHnxoAZ8NnnsrjhMLduJo9dG6fNQkmMFL3Qedj2kf5bEy5tptHPApNf";
+            TEST_ASSERT_EQUAL_STRING(expected, out);
+            urc_string_free(out);
+        }
     }
     {
         crypto_output *output = &account.descriptors[5];
@@ -613,6 +674,14 @@ TEST(parser, crypto_account_parse) {
             char derivationpath[BUFLEN];
             int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
             TEST_ASSERT_EQUAL(0, len);
+        }
+        {
+            char *out;
+            err = urc_bip32_tobase58(key, &out);
+            TEST_ASSERT_EQUAL(URC_OK, err);
+            const char *expected = "xpub6EC9f7mLFJQoRQ6qiTvWQeeYsgtki6fBzSUgWgUtAujEMtAfJSAn3AVS4KrLHRV2hNX77YwNkg4azUzuSwhNGtcq4r2J8bLGMDkrQYHvoed";
+            TEST_ASSERT_EQUAL_STRING(expected, out);
+            urc_string_free(out);
         }
     }
 }
@@ -662,6 +731,14 @@ TEST(parser, crypto_jadeaccount_parse) {
         int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
         TEST_ASSERT_EQUAL(0, len);
     }
+    {
+        char *out;
+        err = urc_bip32_tobase58(key, &out);
+        TEST_ASSERT_EQUAL(URC_OK, err);
+        const char *expected = "xpub6CmHFAns2t9zT1HUC5YFEjzcNiwUdQEiez6o2NvVSRvrk5nC3s8mwW57GvPNCEJ2tQTpVa21Gyu4GJgUPfT3NgahVcsTiNCQnMXXTkpq5Ld";
+        TEST_ASSERT_EQUAL_STRING(expected, out);
+        urc_string_free(out);
+    }
 }
 
 TEST(parser, jaderesponse_parse) {
@@ -675,8 +752,9 @@ TEST(parser, jaderesponse_parse) {
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     jade_bip8539_response response;
-    uint8_t out[BUFLEN];
-    int err = urc_jade_bip8539_response_parse(raw, len, &response, out, BUFLEN);
+    uint8_t *out;
+
+    int err = urc_jade_bip8539_response_parse(raw, len, &response);
     TEST_ASSERT_EQUAL(URC_OK, err);
 
     TEST_ASSERT_EQUAL_HEX(0x02, response.pubkey[0]);
@@ -685,4 +763,6 @@ TEST(parser, jaderesponse_parse) {
     TEST_ASSERT_EQUAL(96, response.encrypted_len);
     TEST_ASSERT_EQUAL_HEX(0x6e, response.encrypted_data[0]);
     TEST_ASSERT_EQUAL_HEX(0x34, response.encrypted_data[response.encrypted_len - 1]);
+
+    urc_jade_bip8539_response_clean(&response);
 }

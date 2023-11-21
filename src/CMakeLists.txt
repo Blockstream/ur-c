@@ -12,10 +12,21 @@ add_library(
     macros.h
     utils.c
     utils.h
+    core.c
 )
-file(GLOB urc_headers ${CMAKE_SOURCE_DIR}/include/urc/*.h)
+file(
+    GLOB
+    urc_headers
+    ${CMAKE_SOURCE_DIR}/include/urc/crypto-*.h
+    ${CMAKE_SOURCE_DIR}/include/urc/error.h
+    ${CMAKE_SOURCE_DIR}/src/jade_bip8539.h
+    ${CMAKE_SOURCE_DIR}/include/urc/tags.h
+    ${CMAKE_SOURCE_DIR}/include/urc/urc.h
+    ${CMAKE_SOURCE_DIR}/include/urc/core.h
+)
+
 target_sources(urc PRIVATE ${urc_headers})
-target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR)
+target_link_libraries(urc PUBLIC PkgConfig::TinyCBOR PkgConfig::wallycore)
 target_include_directories(
     urc PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
                $<INSTALL_INTERFACE:include>

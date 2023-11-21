@@ -27,9 +27,19 @@
         goto exit_point;                                                                                                         \
     }                                                                                                                            \
     {                                                                                                                            \
-        CborError err = cbor_value_leave_container(cursor, recursive);                                                                     \
+        CborError err = cbor_value_leave_container(cursor, recursive);                                                           \
         if (err != CborNoError) {                                                                                                \
             (urcerror) = URC_ECBORINTERNALERROR;                                                                                 \
             goto exit_point;                                                                                                     \
         }                                                                                                                        \
+    }
+
+#define CHECK_WALLY_ERROR(error, urcerror, exit_point)                                                                           \
+    if ((error) == WALLY_ENOMEM) {                                                                                               \
+        (urcerror) = URC_ENOMEM;                                                                                                 \
+        goto exit_point;                                                                                                         \
+    }                                                                                                                            \
+    if ((error) != WALLY_OK) {                                                                                                   \
+        (urcerror) = URC_EWALLYINTERNALERROR;                                                                                    \
+        goto exit_point;                                                                                                         \
     }

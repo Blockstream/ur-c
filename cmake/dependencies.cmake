@@ -43,7 +43,7 @@ macro(fetch_wally)
         BUILD_ALWAYS FALSE
         CONFIGURE_COMMAND
             ./tools/autogen.sh && ./configure --prefix=<INSTALL_DIR> --disable-shared --enable-static --disable-tests
-            --disable-swig-java --disable-swig-python --disable-elements --disable-elements-abi --disable-asm ${WALLY_DEBUG}
+            --disable-swig-java --disable-swig-python ${WALLY_DEBUG}
         BUILD_COMMAND make
         INSTALL_COMMAND make install
     )
@@ -54,7 +54,7 @@ macro(fetch_wally)
     add_library(PkgConfig::libsecp256k1 STATIC IMPORTED)
     set_target_properties(
         PkgConfig::libsecp256k1
-        PROPERTIES IMPORTED_LOCATION ${INSTALL_DIR}/lib/libsecp256k1.a # ugly but needed to mimick the pkg-config file
+        PROPERTIES IMPORTED_LOCATION ${INSTALL_DIR}/lib/libsecp256k1.a # ugly but needed to mimic the pkg-config file
                    INTERFACE_INCLUDE_DIRECTORIES ${INSTALL_DIR}/include
     )
     add_dependencies(PkgConfig::libsecp256k1 wallycore-external)

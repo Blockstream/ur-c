@@ -1,16 +1,27 @@
 ---
 
+stages:
+  - test
+  - wally
+  - fuzzy
+
+
+.env-setup:
+  before_script:
+    - apt-get update -yqq
+    - apt-get install --no-install-recommends -yqq cmake valgrind python3 python3-pip python3-virtualenv git libtool
+    - virtualenv venv
+    - source venv/bin/activate
+
+
 test:
+  extends: .env-setup
   image: gcc:12-bookworm
   stage: test
   script:
-    - apt-get update -yqq
-    - apt-get install -yqq cmake valgrind python3 python3-pip python3-virtualenv
     - cmake --preset dev
     - cmake --build --preset dev
-    - ctest --output-junit report.xml --preset dev
-    - virtualenv venv
-    - source venv/bin/activate
+    - ctest --output-junit report.xml --output-on-failure --preset dev
     - pip install valgrind-codequality gcovr
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
     - ctest -T memcheck --test-dir build/dev
@@ -26,11 +37,10 @@ test:
 
 
 fuzzy-test:
+  extends: .env-setup
   image: silkeh/clang:15-bookworm
-  stage: test
+  stage: fuzzy
   script:
-    - apt-get update -yqq
-    - apt-get install --no-install-recommends -yqq git cmake valgrind
     - cmake --preset fuzzy
     - cmake --build --preset fuzzy
     - ctest --preset fuzzy -R fuzzy --output-on-failure

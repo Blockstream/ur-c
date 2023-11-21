@@ -1,5 +1,6 @@
 #pragma once
 
+#include "urc/core.h"
 #include "urc/crypto_account.h"
 #include "urc/crypto_eckey.h"
 #include "urc/crypto_hdkey.h"

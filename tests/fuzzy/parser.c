@@ -1,3 +1,4 @@
+
 #include "urc/urc.h"
 
 #define BUFSIZE 1000
@@ -49,7 +50,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t len) {
     }
 
     jade_bip8539_response response;
-    int err = urc_jade_bip8539_response_parse(data, len, &response, buffer, BUFSIZE);
+    int err = urc_jade_bip8539_response_parse(data, len, &response);
+    urc_jade_bip8539_response_clean(&response);
     if (err != 0) {
         return -1;
     }

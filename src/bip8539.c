@@ -1,4 +1,6 @@
 
+#include "wally_core.h"
+
 #include "urc/crypto_eckey.h"
 #include "urc/error.h"
 #include "urc/jade_bip8539.h"
@@ -6,7 +8,7 @@
 #include "macros.h"
 #include "utils.h"
 
-static int jade_bip8539_request_format_impl(CborEncoder *encoder, const jade_bip8539_request *request) {
+static int jade_bip8539_request_format_op(CborEncoder *encoder, const jade_bip8539_request *request) {
     CborError err;
     CborEncoder map;
     err = cbor_encoder_create_map(encoder, &map, 3);
@@ -33,7 +35,7 @@ static int jade_bip8539_request_format_impl(CborEncoder *encoder, const jade_bip
     return URC_OK;
 }
 
-static int jade_bip8539_response_parse_impl(CborValue *iter, jade_bip8539_response *out, uint8_t *buffer, size_t len) {
+static int jade_bip8539_response_parse_op(CborValue *iter, jade_bip8539_response *out, uint8_t *buffer, size_t len) {
     out->encrypted_len = 0;
     int result = URC_OK;
 
@@ -66,11 +68,11 @@ exit:
     return result;
 }
 
-int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t *out, size_t *len) {
+static int urc_jade_bip8539_request_format_impl(const jade_bip8539_request *request, uint8_t *out, size_t *len) {
     CborEncoder encoder;
     cbor_encoder_init(&encoder, out, *len, 0);
 
-    int result = jade_bip8539_request_format_impl(&encoder, request);
+    int result = jade_bip8539_request_format_op(&encoder, request);
     if (result == URC_OK) {
         *len = cbor_encoder_get_buffer_size(&encoder, out);
     } else {
@@ -79,8 +81,8 @@ int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t
     return result;
 }
 
-int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response, uint8_t *buffer,
-                                    size_t buffer_len) {
+static int urc_jade_bip8539_response_parse_impl(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response,
+                                                uint8_t *buffer, size_t buffer_len) {
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -88,5 +90,49 @@ int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_b
     if (err != CborNoError) {
         return URC_ECBORINTERNALERROR;
     }
-    return jade_bip8539_response_parse_impl(&iter, response, buffer, buffer_len);
+    return jade_bip8539_response_parse_op(&iter, response, buffer, buffer_len);
 }
+
+int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t **out, size_t *len) {
+    const size_t upperbound_request_len = 80;
+    size_t buffer_len = upperbound_request_len;
+    int result = URC_OK;
+    *out = NULL;
+    do {
+        wally_free(*out);
+        *out = wally_malloc(buffer_len);
+        if (!*out) {
+            return URC_ENOMEM;
+        }
+        *len = buffer_len;
+        result = urc_jade_bip8539_request_format_impl(request, *out, len);
+        buffer_len *= 2;
+    } while (result == URC_EBUFFERTOOSMALL);
+    if (result != URC_OK) {
+        wally_free(*out);
+        *out = NULL;
+        *len = 0;
+    }
+    return result;
+}
+
+int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response) {
+    int result = URC_OK;
+    size_t buffer_len = cbor_len;
+    uint8_t *buffer = NULL;
+    do {
+        wally_free(buffer);
+        buffer = wally_malloc(buffer_len);
+        if (!buffer) {
+            return URC_ENOMEM;
+        }
+        result = urc_jade_bip8539_response_parse_impl(cbor, cbor_len, response, buffer, buffer_len);
+        buffer_len *= 2;
+    } while (result == URC_EBUFFERTOOSMALL);
+    if (result != URC_OK) {
+        wally_free(buffer);
+    }
+    return result;
+}
+
+void urc_jade_bip8539_response_clean(jade_bip8539_response *response) { wally_free(response->encrypted_data); }

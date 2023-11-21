@@ -1,12 +1,14 @@
 
-#include "urc/error.h"
 #ifdef WIN32
 #include <winsock2.h>
 #else
 #include <arpa/inet.h>
 #endif
 
+#include "wally_bip32.h"
+
 #include "urc/crypto_hdkey.h"
+#include "urc/error.h"
 #include "urc/tags.h"
 
 #include "internals.h"
@@ -692,4 +694,44 @@ int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t out_le
     }
 
     return total_len;
+}
+
+int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out) {
+    if (hdkey == NULL || hdkey->type == hdkey_type_na || out == NULL) {
+        return URC_EINVALIDARG;
+    }
+
+    const uint32_t version = urc_hdkey_getversion(hdkey);
+    const uint8_t depth = urc_hdkey_getdepth(hdkey);
+    const uint32_t child_num = urc_hdkey_getchildnumber(hdkey);
+    const uint32_t parent_fpr = htonl(urc_hdkey_getparentfingerprint(hdkey));
+    const uint8_t *chaincode = urc_hdkey_getchaincode(hdkey);
+    uint8_t *keydata = urc_hdkey_getkeydata(hdkey);
+    unsigned char *priv_key = NULL;
+    size_t priv_key_len = 0;
+    unsigned char *pub_key = NULL;
+    size_t pub_key_len = 0;
+    uint32_t serialization_flag = 0;
+    if (hdkey->type == hdkey_type_master || hdkey->key.derived.is_private) {
+        priv_key = keydata + 1;
+        priv_key_len = CRYPTO_HDKEY_KEYDATA_SIZE - 1;
+        serialization_flag = BIP32_FLAG_KEY_PRIVATE;
+    } else {
+        pub_key = keydata;
+        pub_key_len = CRYPTO_HDKEY_KEYDATA_SIZE;
+        serialization_flag = BIP32_FLAG_KEY_PUBLIC;
+    }
+
+    int urc_result = URC_OK;
+    struct ext_key wally_key;
+    int wally_result = bip32_key_init(version, depth, child_num, chaincode, CRYPTO_HDKEY_CHAINCODE_SIZE, pub_key, pub_key_len,
+                                      priv_key, priv_key_len, NULL, 0, (uint8_t *)&parent_fpr, sizeof(uint32_t), &wally_key);
+    CHECK_WALLY_ERROR(wally_result, urc_result, exit);
+
+    wally_result = bip32_key_to_base58(&wally_key, serialization_flag, out);
+    CHECK_WALLY_ERROR(wally_result, urc_result, exit);
+
+exit:
+    wally_bzero(&wally_key, sizeof(wally_key));
+    return urc_result;
 }
