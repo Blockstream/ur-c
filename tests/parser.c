@@ -17,7 +17,8 @@ TEST_GROUP(parser);
 TEST_SETUP(parser) {}
 TEST_TEAR_DOWN(parser) {}
 
-void test_format_key_origin(const crypto_hdkey *key, const char *expected) {
+void test_format_key_origin(const crypto_hdkey *key, const char *expected)
+{
     size_t expected_len = strnlen(expected, BUFLEN);
     char keypath[BUFLEN];
     if (RUNNING_ON_VALGRIND) {
@@ -41,7 +42,8 @@ void test_format_key_origin(const crypto_hdkey *key, const char *expected) {
     TEST_ASSERT_EQUAL_STRING(expected, keypath);
 }
 
-TEST(parser, crypto_seed_parse) {
+TEST(parser, crypto_seed_parse)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#exampletest-vector-1
     const char *hex = "a20150c7098580125e2ab0981253468b2dbc5202d8641947da";
     uint8_t raw[BUFLEN];
@@ -56,7 +58,8 @@ TEST(parser, crypto_seed_parse) {
     TEST_ASSERT_EQUAL_HEX(0x52, seed.seed[CRYPTO_SEED_SIZE - 1]);
 }
 
-TEST(parser, crypto_psbt_parse) {
+TEST(parser, crypto_psbt_parse)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt
     const char *hex = "58a770736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd7500"
                       "00000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffff"
@@ -77,7 +80,8 @@ TEST(parser, crypto_psbt_parse) {
     TEST_ASSERT_EQUAL_HEX(0x00, psbt.buffer[psbt.psbt_len - 1]);
 }
 
-TEST(parser, crypto_eckey_parse) {
+TEST(parser, crypto_eckey_parse)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt
     const char *hex = "a202f50358208c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa";
     uint8_t raw[BUFLEN];
@@ -92,7 +96,8 @@ TEST(parser, crypto_eckey_parse) {
     TEST_ASSERT_EQUAL_HEX(0xaa, eckey.key.prvate[CRYPTO_ECKEY_PRIVATE_SIZE - 1]);
 }
 
-TEST(parser, crypto_hdkey_parse_1) {
+TEST(parser, crypto_hdkey_parse_1)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-007-hdkey.md#exampletest-vector-1
     const char *hex = "a301f503582100e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35045820873dff81c02f525623fd1f"
                       "e5167eac3a55a049de3d314bb42ee227ffed37d508";
@@ -124,13 +129,15 @@ TEST(parser, crypto_hdkey_parse_1) {
         char *out;
         err = urc_bip32_tobase58(&hdkey, &out);
         TEST_ASSERT_EQUAL(URC_OK, err);
-        const char *expected = "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi";
+        const char *expected =
+            "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi";
         TEST_ASSERT_EQUAL_STRING(expected, out);
         urc_string_free(out);
     }
 }
 
-TEST(parser, crypto_hdkey_parse_2) {
+TEST(parser, crypto_hdkey_parse_2)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-007-hdkey.md#exampletest-vector-2
     const char *hex = "a5035821026fe2355745bb2db3630bbc80ef5d58951c963c841f54170ba6e5c12be7fc12a6045820ced155c72456255881793514ed"
                       "c5bd9447e7f74abb88c6d6b6480fd016ee8c8505d90131a1020106d90130a1018a182cf501f501f500f401f4081ae9181cf3";
@@ -204,13 +211,15 @@ TEST(parser, crypto_hdkey_parse_2) {
         char *out;
         err = urc_bip32_tobase58(&hdkey, &out);
         TEST_ASSERT_EQUAL(URC_OK, err);
-        const char *expected = "tpubDHW3GtnVrTatx38EcygoSf9UhUd9Dx1rht7FAL8unrMo8r2NWhJuYNqDFS7cZFVbDaxJkV94MLZAr86XFPsAPYcoHWJ7sWYsrmHDw5sKQ2K";
+        const char *expected =
+            "tpubDHW3GtnVrTatx38EcygoSf9UhUd9Dx1rht7FAL8unrMo8r2NWhJuYNqDFS7cZFVbDaxJkV94MLZAr86XFPsAPYcoHWJ7sWYsrmHDw5sKQ2K";
         TEST_ASSERT_EQUAL_STRING(expected, out);
         urc_string_free(out);
     }
 }
 
-TEST(parser, crypto_output_parse_1) {
+TEST(parser, crypto_output_parse_1)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-1
     const char *hex = "d90193d90132a103582102c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5";
     uint8_t raw[BUFLEN];
@@ -227,7 +236,8 @@ TEST(parser, crypto_output_parse_1) {
     TEST_ASSERT_EQUAL_HEX(0xe5, output.output.key.key.eckey.key.public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
 }
 
-TEST(parser, crypto_output_parse_2) {
+TEST(parser, crypto_output_parse_2)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-1
     const char *hex = "d90190d90194d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556";
     uint8_t raw[BUFLEN];
@@ -245,7 +255,8 @@ TEST(parser, crypto_output_parse_2) {
     TEST_ASSERT_EQUAL(0x56, output.output.key.key.eckey.key.public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
 }
 
-TEST(parser, crypto_output_parse_3) {
+TEST(parser, crypto_output_parse_3)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md#exampletest-vector-3
     const char *hex = "d90190d90196a201020282d90132a1035821022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01d901"
                       "32a103582103acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe";
@@ -258,7 +269,8 @@ TEST(parser, crypto_output_parse_3) {
     TEST_ASSERT_EQUAL(URC_EUNHANDLEDCASE, err);
 }
 
-TEST(parser, crypto_output_parse_4) {
+TEST(parser, crypto_output_parse_4)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-4
     const char *hex =
         "d90193d9012fa503582102d2b36900396c9282fa14628566582f206a5dd0bcc8d5e892611806cafb0301f0045820637807030d55d01f9a0cb3a78395"
@@ -330,13 +342,15 @@ TEST(parser, crypto_output_parse_4) {
         char *out;
         err = urc_bip32_tobase58(key, &out);
         TEST_ASSERT_EQUAL(URC_OK, err);
-        const char *expected = "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL";
+        const char *expected =
+            "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL";
         TEST_ASSERT_EQUAL_STRING(expected, out);
         urc_string_free(out);
     }
 }
 
-TEST(parser, crypto_output_parse_5) {
+TEST(parser, crypto_output_parse_5)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-5
     const char *hex = "d90191d90196a201010282d9012fa403582103cbcaa9c98c877a26977d00825c956a238e8dddfbd322cce4f74b0b5bd6ace4a70458"
                       "2060499f801b896d83179a4374aeb7822aaeaceaa0db1f85ee3e904c4defbd968906d90130a20180030007d90130a1018601f400f4"
@@ -351,7 +365,8 @@ TEST(parser, crypto_output_parse_5) {
     TEST_ASSERT_EQUAL(URC_EUNHANDLEDCASE, err);
 }
 
-TEST(parser, crypto_account_parse) {
+TEST(parser, crypto_account_parse)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md#exampletest-vector
     const char *hex =
         "a2011a37b5eed40287d90134d90193d9012fa403582103eb3e2863911826374de86c231a4b76f0b89dfa174afb78d7f478199884d9dd320458206456"
@@ -424,7 +439,8 @@ TEST(parser, crypto_account_parse) {
             char *out;
             err = urc_bip32_tobase58(key, &out);
             TEST_ASSERT_EQUAL(URC_OK, err);
-            const char *expected = "xpub6CnQkivUEH9bSbWVWfDLCtigKKgnSWGaVSRyCbN2QNBJzuvHT1vUQpgSpY1NiVvoeNEuVwk748Cn9G3NtbQB1aGGsEL7aYEnjVWgjj9tefu";
+            const char *expected =
+                "xpub6CnQkivUEH9bSbWVWfDLCtigKKgnSWGaVSRyCbN2QNBJzuvHT1vUQpgSpY1NiVvoeNEuVwk748Cn9G3NtbQB1aGGsEL7aYEnjVWgjj9tefu";
             TEST_ASSERT_EQUAL_STRING(expected, out);
             urc_string_free(out);
         }
@@ -475,7 +491,8 @@ TEST(parser, crypto_account_parse) {
             char *out;
             err = urc_bip32_tobase58(key, &out);
             TEST_ASSERT_EQUAL(URC_OK, err);
-            const char *expected = "xpub6CtR1iF4dZPkEyXDwVf3HE74tSwXNMcHtBzX4gwz2UnPhJ54Jz5unHx2syYCCDkvVUmsmoYTmcaHXe1wJppvct4GMMaN5XAbRk7yGScRSte";
+            const char *expected =
+                "xpub6CtR1iF4dZPkEyXDwVf3HE74tSwXNMcHtBzX4gwz2UnPhJ54Jz5unHx2syYCCDkvVUmsmoYTmcaHXe1wJppvct4GMMaN5XAbRk7yGScRSte";
             TEST_ASSERT_EQUAL_STRING(expected, out);
             urc_string_free(out);
         }
@@ -526,7 +543,8 @@ TEST(parser, crypto_account_parse) {
             char *out;
             err = urc_bip32_tobase58(key, &out);
             TEST_ASSERT_EQUAL(URC_OK, err);
-            const char *expected = "xpub6BkU445MSEBXbPjD3g2c2ch6mn8yy1SXXQUM7EwjgYiq6Wt1NDwDZ45npqWcV8uQC5oi2gHuVukoCoZZyT4HKq8EpotPMqGqxdZRuapCQ23";
+            const char *expected =
+                "xpub6BkU445MSEBXbPjD3g2c2ch6mn8yy1SXXQUM7EwjgYiq6Wt1NDwDZ45npqWcV8uQC5oi2gHuVukoCoZZyT4HKq8EpotPMqGqxdZRuapCQ23";
             TEST_ASSERT_EQUAL_STRING(expected, out);
             urc_string_free(out);
         }
@@ -571,7 +589,8 @@ TEST(parser, crypto_account_parse) {
             char *out;
             err = urc_bip32_tobase58(key, &out);
             TEST_ASSERT_EQUAL(URC_OK, err);
-            const char *expected = "xpub68JFLJTH96GUqC6SoVw5c2qyLSt776PGu5xde8ddVACuPYyarvSL827TbZGavuNbKQ8DG3VP9fCXPhQRBgPrS4MPG3zaZgwAGuPHYvVuY9X";
+            const char *expected =
+                "xpub68JFLJTH96GUqC6SoVw5c2qyLSt776PGu5xde8ddVACuPYyarvSL827TbZGavuNbKQ8DG3VP9fCXPhQRBgPrS4MPG3zaZgwAGuPHYvVuY9X";
             TEST_ASSERT_EQUAL_STRING(expected, out);
             urc_string_free(out);
         }
@@ -625,7 +644,8 @@ TEST(parser, crypto_account_parse) {
             char *out;
             err = urc_bip32_tobase58(key, &out);
             TEST_ASSERT_EQUAL(URC_OK, err);
-            const char *expected = "xpub6EC9f7mLFJQoPaqDJ72Zbv67JWzmpXvCYQSecER9GzkYy5eWLsVLbHnxoAZ8NnnsrjhMLduJo9dG6fNQkmMFL3Qedj2kf5bEy5tptHPApNf";
+            const char *expected =
+                "xpub6EC9f7mLFJQoPaqDJ72Zbv67JWzmpXvCYQSecER9GzkYy5eWLsVLbHnxoAZ8NnnsrjhMLduJo9dG6fNQkmMFL3Qedj2kf5bEy5tptHPApNf";
             TEST_ASSERT_EQUAL_STRING(expected, out);
             urc_string_free(out);
         }
@@ -679,14 +699,16 @@ TEST(parser, crypto_account_parse) {
             char *out;
             err = urc_bip32_tobase58(key, &out);
             TEST_ASSERT_EQUAL(URC_OK, err);
-            const char *expected = "xpub6EC9f7mLFJQoRQ6qiTvWQeeYsgtki6fBzSUgWgUtAujEMtAfJSAn3AVS4KrLHRV2hNX77YwNkg4azUzuSwhNGtcq4r2J8bLGMDkrQYHvoed";
+            const char *expected =
+                "xpub6EC9f7mLFJQoRQ6qiTvWQeeYsgtki6fBzSUgWgUtAujEMtAfJSAn3AVS4KrLHRV2hNX77YwNkg4azUzuSwhNGtcq4r2J8bLGMDkrQYHvoed";
             TEST_ASSERT_EQUAL_STRING(expected, out);
             urc_string_free(out);
         }
     }
 }
 
-TEST(parser, crypto_jadeaccount_parse) {
+TEST(parser, crypto_jadeaccount_parse)
+{
     // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md#exampletest-vector
     const char *hex =
         "a2011ab6215d6b0281d90194d9012fa4035821025d6aca89f721020f672d1653f87d171c1ad4103a24e8eaa3a07c596bc6652f7a045820e6b977baf5"
@@ -735,13 +757,15 @@ TEST(parser, crypto_jadeaccount_parse) {
         char *out;
         err = urc_bip32_tobase58(key, &out);
         TEST_ASSERT_EQUAL(URC_OK, err);
-        const char *expected = "xpub6CmHFAns2t9zT1HUC5YFEjzcNiwUdQEiez6o2NvVSRvrk5nC3s8mwW57GvPNCEJ2tQTpVa21Gyu4GJgUPfT3NgahVcsTiNCQnMXXTkpq5Ld";
+        const char *expected =
+            "xpub6CmHFAns2t9zT1HUC5YFEjzcNiwUdQEiez6o2NvVSRvrk5nC3s8mwW57GvPNCEJ2tQTpVa21Gyu4GJgUPfT3NgahVcsTiNCQnMXXTkpq5Ld";
         TEST_ASSERT_EQUAL_STRING(expected, out);
         urc_string_free(out);
     }
 }
 
-TEST(parser, jaderesponse_parse) {
+TEST(parser, jaderesponse_parse)
+{
     const char *hex =
         "a2667075626b657958210252835e60d6157695c0faf7ab501c1ef206332652f47a4a69d09a388632b2428369656e6372797074656458606ebdd102c0"
         "24adbd2a26140262a31d1948863df0d6fc21b6a249028f5c97e3b553d79417310931ba8d6467d4a3e0f64a77999300708f19c9fc4ea5f2b13e0ebb17"

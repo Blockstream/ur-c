@@ -21,7 +21,8 @@ int urc_crypto_hdkey_coininfo_parse(CborValue *iter, crypto_coininfo *out);
 int urc_crypto_hdkey_keypath_parse(CborValue *iter, crypto_keypath *out);
 int urc_crypto_hdkey_pathcomponent_parse(CborValue *iter, path_component *out);
 
-int urc_crypto_hdkey_parse(const uint8_t *buffer, size_t len, crypto_hdkey *out) {
+int urc_crypto_hdkey_parse(const uint8_t *buffer, size_t len, crypto_hdkey *out)
+{
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -32,7 +33,8 @@ int urc_crypto_hdkey_parse(const uint8_t *buffer, size_t len, crypto_hdkey *out)
     return urc_crypto_hdkey_parse_impl(&iter, out);
 }
 
-int urc_crypto_hdkey_parse_impl(CborValue *iter, crypto_hdkey *out) {
+int urc_crypto_hdkey_parse_impl(CborValue *iter, crypto_hdkey *out)
+{
     int result = URC_OK;
     out->type = hdkey_type_na;
 
@@ -53,7 +55,8 @@ exit:
     return result;
 }
 
-int urc_crypto_hdkey_masterkey_parse(CborValue *iter, hd_master_key *out) {
+int urc_crypto_hdkey_masterkey_parse(CborValue *iter, hd_master_key *out)
+{
     int result = URC_OK;
 
     CHECK_IS_TYPE(iter, map, result, exit);
@@ -100,7 +103,8 @@ exit:
     return result;
 }
 
-int urc_crypto_hdkey_derivedkey_parse(CborValue *iter, hd_derived_key *out) {
+int urc_crypto_hdkey_derivedkey_parse(CborValue *iter, hd_derived_key *out)
+{
     int result = URC_OK;
 
     CHECK_IS_TYPE(iter, map, result, exit);
@@ -233,7 +237,8 @@ exit:
     return result;
 }
 
-int urc_crypto_hdkey_coininfo_parse(CborValue *iter, crypto_coininfo *out) {
+int urc_crypto_hdkey_coininfo_parse(CborValue *iter, crypto_coininfo *out)
+{
     int result = URC_OK;
 
     CHECK_IS_TYPE(iter, map, result, exit);
@@ -265,7 +270,8 @@ exit:
     return result;
 }
 
-int urc_crypto_hdkey_keypath_parse(CborValue *iter, crypto_keypath *out) {
+int urc_crypto_hdkey_keypath_parse(CborValue *iter, crypto_keypath *out)
+{
     int result = URC_OK;
     out->depth = 0;
 
@@ -336,7 +342,8 @@ int internal_parse_index_component(CborValue *iter, child_index_component *out);
 int internal_parse_range_component(CborValue *iter, child_range_component *out);
 int internal_parse_pair_component(CborValue *iter, child_pair_component *out);
 
-int urc_crypto_hdkey_pathcomponent_parse(CborValue *iter, path_component *out) {
+int urc_crypto_hdkey_pathcomponent_parse(CborValue *iter, path_component *out)
+{
     int result = URC_OK;
     out->type = path_component_type_na;
 
@@ -387,7 +394,8 @@ exit:
     return result;
 }
 
-int internal_parse_index_component(CborValue *iter, child_index_component *out) {
+int internal_parse_index_component(CborValue *iter, child_index_component *out)
+{
     int result = URC_OK;
 
     CHECK_IS_TYPE(iter, unsigned_integer, result, exit);
@@ -406,7 +414,8 @@ exit:
     return result;
 }
 
-int internal_parse_range_component(CborValue *iter, child_range_component *out) {
+int internal_parse_range_component(CborValue *iter, child_range_component *out)
+{
     int result = URC_OK;
 
     CHECK_IS_TYPE(iter, array, result, exit);
@@ -437,7 +446,8 @@ exit:
     return result;
 }
 
-int internal_parse_pair_component(CborValue *iter, child_pair_component *out) {
+int internal_parse_pair_component(CborValue *iter, child_pair_component *out)
+{
     int result = URC_OK;
 
     CHECK_IS_TYPE(iter, array, result, exit)
@@ -462,7 +472,8 @@ exit:
     return result;
 }
 
-uint32_t urc_hdkey_getversion(const crypto_hdkey *hdkey) {
+uint32_t urc_hdkey_getversion(const crypto_hdkey *hdkey)
+{
     switch (hdkey->type) {
     case hdkey_type_master:
         return 0x0488ADE4;
@@ -480,7 +491,8 @@ uint32_t urc_hdkey_getversion(const crypto_hdkey *hdkey) {
     }
 }
 
-uint8_t urc_hdkey_getdepth(const crypto_hdkey *hdkey) {
+uint8_t urc_hdkey_getdepth(const crypto_hdkey *hdkey)
+{
     switch (hdkey->type) {
     case hdkey_type_master:
         return 0x00;
@@ -498,7 +510,8 @@ uint8_t urc_hdkey_getdepth(const crypto_hdkey *hdkey) {
     }
 }
 
-uint32_t urc_hdkey_getchildnumber(const crypto_hdkey *hdkey) {
+uint32_t urc_hdkey_getchildnumber(const crypto_hdkey *hdkey)
+{
     switch (hdkey->type) {
     case hdkey_type_master:
         return 0;
@@ -524,7 +537,8 @@ uint32_t urc_hdkey_getchildnumber(const crypto_hdkey *hdkey) {
     }
 }
 
-uint32_t urc_hdkey_getparentfingerprint(const crypto_hdkey *hdkey) {
+uint32_t urc_hdkey_getparentfingerprint(const crypto_hdkey *hdkey)
+{
     switch (hdkey->type) {
     case hdkey_type_master:
         return 0;
@@ -535,7 +549,8 @@ uint32_t urc_hdkey_getparentfingerprint(const crypto_hdkey *hdkey) {
     }
 }
 
-uint8_t *urc_hdkey_getchaincode(const crypto_hdkey *hdkey) {
+uint8_t *urc_hdkey_getchaincode(const crypto_hdkey *hdkey)
+{
     switch (hdkey->type) {
     case hdkey_type_master:
         return (uint8_t *)hdkey->key.master.chaincode;
@@ -546,7 +561,8 @@ uint8_t *urc_hdkey_getchaincode(const crypto_hdkey *hdkey) {
     }
 }
 
-uint8_t *urc_hdkey_getkeydata(const crypto_hdkey *hdkey) {
+uint8_t *urc_hdkey_getkeydata(const crypto_hdkey *hdkey)
+{
     switch (hdkey->type) {
     case hdkey_type_master:
         return (uint8_t *)hdkey->key.master.keydata;
@@ -557,7 +573,8 @@ uint8_t *urc_hdkey_getkeydata(const crypto_hdkey *hdkey) {
     }
 }
 
-bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN]) {
+bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN])
+{
     if (hdkey->type == hdkey_type_na) {
         return false;
     }
@@ -595,7 +612,8 @@ bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN
     return true;
 }
 
-int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t out_len) {
+int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t out_len)
+{
     int total_len = 0;
     {
         uint32_t fpr = 0;
@@ -659,7 +677,8 @@ int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t out_len) {
     return total_len;
 }
 
-int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t out_len) {
+int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t out_len)
+{
     switch (hdkey->type) {
     case hdkey_type_master:
         return 0;
@@ -696,7 +715,8 @@ int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t out_le
     return total_len;
 }
 
-int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out) {
+int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out)
+{
     if (hdkey == NULL || hdkey->type == hdkey_type_na || out == NULL) {
         return URC_EINVALIDARG;
     }

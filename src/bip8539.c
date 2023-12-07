@@ -8,7 +8,8 @@
 #include "macros.h"
 #include "utils.h"
 
-static int jade_bip8539_request_format_op(CborEncoder *encoder, const jade_bip8539_request *request) {
+static int jade_bip8539_request_format_op(CborEncoder *encoder, const jade_bip8539_request *request)
+{
     CborError err;
     CborEncoder map;
     err = cbor_encoder_create_map(encoder, &map, 3);
@@ -35,7 +36,8 @@ static int jade_bip8539_request_format_op(CborEncoder *encoder, const jade_bip85
     return URC_OK;
 }
 
-static int jade_bip8539_response_parse_op(CborValue *iter, jade_bip8539_response *out, uint8_t *buffer, size_t len) {
+static int jade_bip8539_response_parse_op(CborValue *iter, jade_bip8539_response *out, uint8_t *buffer, size_t len)
+{
     out->encrypted_len = 0;
     int result = URC_OK;
 
@@ -68,7 +70,8 @@ exit:
     return result;
 }
 
-static int urc_jade_bip8539_request_format_impl(const jade_bip8539_request *request, uint8_t *out, size_t *len) {
+static int urc_jade_bip8539_request_format_impl(const jade_bip8539_request *request, uint8_t *out, size_t *len)
+{
     CborEncoder encoder;
     cbor_encoder_init(&encoder, out, *len, 0);
 
@@ -82,7 +85,8 @@ static int urc_jade_bip8539_request_format_impl(const jade_bip8539_request *requ
 }
 
 static int urc_jade_bip8539_response_parse_impl(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response,
-                                                uint8_t *buffer, size_t buffer_len) {
+                                                uint8_t *buffer, size_t buffer_len)
+{
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -93,7 +97,8 @@ static int urc_jade_bip8539_response_parse_impl(const uint8_t *cbor, size_t cbor
     return jade_bip8539_response_parse_op(&iter, response, buffer, buffer_len);
 }
 
-int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t **out, size_t *len) {
+int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t **out, size_t *len)
+{
     const size_t upperbound_request_len = 80;
     size_t buffer_len = upperbound_request_len;
     int result = URC_OK;
@@ -116,7 +121,8 @@ int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t
     return result;
 }
 
-int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response) {
+int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response)
+{
     int result = URC_OK;
     size_t buffer_len = cbor_len;
     uint8_t *buffer = NULL;
