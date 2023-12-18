@@ -114,5 +114,5 @@ bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN
 // otherwise, any value <0 means an error occurred
 int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t len);
 int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t len);
-// out must be freed by caller using urc_string_free function
+// ``out`` must be freed by caller using urc_string_free function
 int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out);

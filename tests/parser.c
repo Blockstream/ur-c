@@ -2,9 +2,7 @@
 #include <string.h>
 #include <valgrind/memcheck.h>
 
-#include "unity.h"
 #include "unity_fixture.h"
-#include "wally_core.h"
 
 #include "urc/urc.h"
 
