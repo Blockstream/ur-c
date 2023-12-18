@@ -489,6 +489,8 @@ uint32_t urc_hdkey_getversion(const crypto_hdkey *hdkey)
     default:
         assert(false);
     }
+    assert(false);
+    return 0;
 }
 
 uint8_t urc_hdkey_getdepth(const crypto_hdkey *hdkey)
@@ -508,6 +510,8 @@ uint8_t urc_hdkey_getdepth(const crypto_hdkey *hdkey)
     default:
         assert(false);
     }
+    assert(false);
+    return 0;
 }
 
 uint32_t urc_hdkey_getchildnumber(const crypto_hdkey *hdkey)
@@ -529,12 +533,15 @@ uint32_t urc_hdkey_getchildnumber(const crypto_hdkey *hdkey)
         }
 
         const size_t last_derivedcomponent_idx = hdkey->key.derived.children.components_count - 1;
-        const path_component *last_derivedcomponent = &hdkey->key.derived.children.components[last_derivedcomponent_idx];
+        __attribute__((unused)) const path_component *last_derivedcomponent =
+            &hdkey->key.derived.children.components[last_derivedcomponent_idx];
         assert(last_derivedcomponent->type == path_component_type_wildcard);
         return 0xfffffffe;
     default:
         assert(false);
     }
+    assert(false);
+    return 0;
 }
 
 uint32_t urc_hdkey_getparentfingerprint(const crypto_hdkey *hdkey)
@@ -547,6 +554,8 @@ uint32_t urc_hdkey_getparentfingerprint(const crypto_hdkey *hdkey)
     default:
         assert(false);
     }
+    assert(false);
+    return 0;
 }
 
 uint8_t *urc_hdkey_getchaincode(const crypto_hdkey *hdkey)
@@ -559,6 +568,8 @@ uint8_t *urc_hdkey_getchaincode(const crypto_hdkey *hdkey)
     default:
         assert(false);
     }
+    assert(false);
+    return 0;
 }
 
 uint8_t *urc_hdkey_getkeydata(const crypto_hdkey *hdkey)
@@ -571,6 +582,8 @@ uint8_t *urc_hdkey_getkeydata(const crypto_hdkey *hdkey)
     default:
         assert(false);
     }
+    assert(false);
+    return NULL;
 }
 
 bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN])
