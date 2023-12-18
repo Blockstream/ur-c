@@ -55,5 +55,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t len) {
     if (result != URC_OK) {
         return -1;
     }
+
+    char *out = NULL;
+    result = urc_jade_rpc_parse(data, len, &out);
+    if (result != URC_OK) {
+        return -1;
+    }
+    urc_string_free(out);
+
     return 0;
 }

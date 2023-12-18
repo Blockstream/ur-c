@@ -3,6 +3,7 @@ add_library(
     account.c
     bip8539.c
     jadeaccount.c
+    jade_rpc.c
     eckey.c
     hdkey.c
     output.c

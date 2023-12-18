@@ -4,7 +4,15 @@ else()
     find_package(unity REQUIRED)
 endif()
 
-add_executable(units helpers.h helpers.c formatter.c parser.c runner.c)
+add_executable(
+    units
+    helpers.h
+    helpers.c
+    formatter.c
+    parser.c
+    runner.c
+    jade_rpc.c
+)
 target_link_libraries(units PRIVATE urc unity)
 target_include_directories(units PRIVATE ${CMAKE_SOURCE_DIR}/src)
 add_test(NAME units COMMAND units)

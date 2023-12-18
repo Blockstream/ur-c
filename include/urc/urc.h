@@ -9,4 +9,5 @@
 #include "urc/crypto_seed.h"
 #include "urc/error.h"
 #include "urc/jade_bip8539.h"
+#include "urc/jade_rpc.h"
 #include "urc/tags.h"

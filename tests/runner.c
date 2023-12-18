@@ -21,9 +21,14 @@ TEST_GROUP_RUNNER(formatter) {
     RUN_TEST_CASE(formatter, jaderequest_format);
 }
 
+TEST_GROUP_RUNNER(jade_rpc) {
+    RUN_TEST_CASE(jade_rpc, parse_jade_pin);
+}
+
 static void RunAllTests(void) {
     RUN_TEST_GROUP(parser);
     RUN_TEST_GROUP(formatter);
+    RUN_TEST_GROUP(jade_rpc);
 }
 
 int main(int argc, const char *argv[]) { return UnityMain(argc, argv, RunAllTests); }
