@@ -5,14 +5,14 @@ macro(fetch_tinycbor)
     # tiny cbor
     ExternalProject_Add(
         TinyCBOR-external
-        GIT_REPOSITORY https://github.com/intel/TinyCBOR
-        GIT_TAG v0.6.0
+        GIT_REPOSITORY https://github.com/lightyear15/TinyCBOR
+        GIT_TAG v0.6.0-memfile
         UPDATE_DISCONNECTED TRUE
         BUILD_IN_SOURCE TRUE
         BUILD_ALWAYS FALSE
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND make
-        INSTALL_COMMAND make prefix="<INSTALL_DIR>" install
+        BUILD_COMMAND make lib/libtinycbor.a
+        INSTALL_COMMAND make prefix="<INSTALL_DIR>" BUILD_SHARED=0 install
     )
     ExternalProject_Get_Property(TinyCBOR-external INSTALL_DIR INSTALL_DIR)
     add_library(PkgConfig::TinyCBOR STATIC IMPORTED)
