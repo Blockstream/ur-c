@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(urc
-    VERSION 0.0.2
-    LANGUAGES C CXX
+    VERSION 0.3.0
+    LANGUAGES C
 )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

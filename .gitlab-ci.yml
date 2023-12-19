@@ -2,19 +2,20 @@
 
 stages:
   - test
-  - wally
   - fuzzy
+  - release
 
 
 .env-setup:
+  tags: [ ga ]
   before_script:
     - apt-get update -yqq
-    - apt-get install --no-install-recommends -yqq cmake valgrind python3 python3-pip python3-virtualenv git libtool
+    - apt-get install --no-install-recommends -yqq cmake valgrind python3 python3-pip python3-virtualenv git libtool build-essential autoconf automake
     - virtualenv venv
     - source venv/bin/activate
 
 
-test:
+debug-test:
   extends: .env-setup
   image: gcc:12-bookworm
   stage: test
@@ -36,6 +37,33 @@ test:
         path: coverage.xml
 
 
+mingw-test:
+  extends: .env-setup
+  image:
+    name: purplekarrot/mingw-w64-x86-64
+    entrypoint: [""]
+  stage: test
+  script:
+    ## old version of cmake, presets won't work
+    - cmake -B build -S .
+      -DFETCH_DEPS:BOOL=ON
+      -DCMAKE_BUILD_TYPE:STRING=Debug
+      -DCMAKE_SYSTEM_NAME=Windows
+      -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc-posix
+      -DCMAKE_FIND_ROOT_PATH:PATH=/usr/x86_64-w64-mingw32/
+    - cmake --build build
+
+
+mac-test:
+  tags: [ osx-ia ]
+  stage: test
+  script:
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - cmake --preset default
+    - cmake --build --preset default
+
+
 fuzzy-test:
   extends: .env-setup
   image: silkeh/clang:15-bookworm
@@ -44,3 +72,17 @@ fuzzy-test:
     - cmake --preset fuzzy
     - cmake --build --preset fuzzy
     - ctest --preset fuzzy -R fuzzy --output-on-failure
+
+
+release:
+  extends: .env-setup
+  image: gcc:12-bookworm
+  stage: release
+  script:
+    - cmake --preset default
+    - cmake --build --preset default
+    - cmake --build --preset default --target install
+  artifacts:
+    expire_in: 2 hrs
+    paths:
+      - install/default
