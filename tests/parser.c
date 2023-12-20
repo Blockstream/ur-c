@@ -786,5 +786,5 @@ TEST(parser, jaderesponse_parse)
     TEST_ASSERT_EQUAL_HEX(0x6e, response.encrypted_data[0]);
     TEST_ASSERT_EQUAL_HEX(0x34, response.encrypted_data[response.encrypted_len - 1]);
 
-    urc_jade_bip8539_response_clean(&response);
+    urc_jade_bip8539_response_free(&response);
 }

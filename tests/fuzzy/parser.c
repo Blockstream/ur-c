@@ -51,7 +51,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t len) {
 
     jade_bip8539_response response;
     result = urc_jade_bip8539_response_parse(data, len, &response);
-    urc_jade_bip8539_response_clean(&response);
+    urc_jade_bip8539_response_free(&response);
     if (result != URC_OK) {
         return -1;
     }

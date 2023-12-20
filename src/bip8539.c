@@ -141,4 +141,4 @@ int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_b
     return result;
 }
 
-void urc_jade_bip8539_response_clean(jade_bip8539_response *response) { wally_free(response->encrypted_data); }
+void urc_jade_bip8539_response_free(jade_bip8539_response *response) { wally_free(response->encrypted_data); }
