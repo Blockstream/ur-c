@@ -1,5 +1,8 @@
-
 #pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,3 +28,7 @@ typedef struct {
 } crypto_eckey;
 
 int urc_crypto_eckey_parse(const uint8_t *buffer, size_t len, crypto_eckey *out);
+
+#ifdef __cplusplus
+}
+#endif

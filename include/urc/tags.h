@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     urc_urtypes_tags_crypto_seed = 300,
     urc_urtypes_tags_crypto_hdkey = 303,
@@ -28,3 +32,6 @@ typedef enum {
     CborNumberOfDaysSinceTheEpochDate19700101Tag = 100,
 } URCCborKnowTags;
 
+#ifdef __cplusplus
+}
+#endif

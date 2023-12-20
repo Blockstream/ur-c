@@ -1,6 +1,4 @@
-
 #pragma once
-
 
 #define URC_OK 0
 #define URC_ECBORINTERNALERROR 1

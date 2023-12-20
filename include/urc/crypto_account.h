@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -21,3 +25,7 @@ typedef struct {
 int urc_crypto_account_parse(const uint8_t *buffer, size_t len, crypto_account *out);
 // parse an account in jade format, descriptors are not introduced by tag 308
 int urc_jade_account_parse(const uint8_t *buffer, size_t len, crypto_account *out);
+
+#ifdef __cplusplus
+}
+#endif

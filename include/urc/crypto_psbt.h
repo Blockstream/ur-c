@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,3 +17,7 @@ typedef struct {
 } crypto_psbt;
 
 int urc_crypto_psbt_parse(const uint8_t *buffer, size_t len, crypto_psbt *out);
+
+#ifdef __cplusplus
+}
+#endif

@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -28,3 +32,7 @@ typedef struct {
 int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t **out, size_t *len);
 int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response);
 void urc_jade_bip8539_response_clean(jade_bip8539_response *response);
+
+#ifdef __cplusplus
+}
+#endif

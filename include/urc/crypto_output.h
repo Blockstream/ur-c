@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -46,3 +50,7 @@ typedef struct {
 } crypto_output;
 
 int urc_crypto_output_parse(const uint8_t *buffer, size_t len, crypto_output *out);
+
+#ifdef __cplusplus
+}
+#endif

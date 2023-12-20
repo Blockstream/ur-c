@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #include "urc/error.h"
@@ -12,3 +16,7 @@ typedef struct {
 } crypto_seed;
 
 int urc_crypto_seed_parse(const uint8_t *buffer, size_t len, crypto_seed *out);
+
+#ifdef __cplusplus
+}
+#endif

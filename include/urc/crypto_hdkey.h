@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -116,3 +120,7 @@ int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t len);
 int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t len);
 // ``out`` must be freed by caller using urc_string_free function
 int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out);
+
+#ifdef __cplusplus
+}
+#endif
