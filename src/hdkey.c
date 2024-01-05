@@ -8,7 +8,6 @@
 #include "wally_bip32.h"
 
 #include "urc/crypto_hdkey.h"
-#include "urc/error.h"
 #include "urc/tags.h"
 
 #include "internals.h"
@@ -338,9 +337,9 @@ exit:
     return result;
 }
 
-int internal_parse_index_component(CborValue *iter, child_index_component *out);
-int internal_parse_range_component(CborValue *iter, child_range_component *out);
-int internal_parse_pair_component(CborValue *iter, child_pair_component *out);
+int urc_crypto_hdkey_index_component_parse(CborValue *iter, child_index_component *out);
+int urc_crypto_hdkey_range_component_parse(CborValue *iter, child_range_component *out);
+int urc_crypto_hdkey_pair_component_parse(CborValue *iter, child_pair_component *out);
 
 int urc_crypto_hdkey_pathcomponent_parse(CborValue *iter, path_component *out)
 {
@@ -349,7 +348,7 @@ int urc_crypto_hdkey_pathcomponent_parse(CborValue *iter, path_component *out)
 
     CborError err;
     if (!cbor_value_is_array(iter)) {
-        result = internal_parse_index_component(iter, &out->component.index);
+        result = urc_crypto_hdkey_index_component_parse(iter, &out->component.index);
         if (result != URC_OK) {
             goto exit;
         }
@@ -376,15 +375,13 @@ int urc_crypto_hdkey_pathcomponent_parse(CborValue *iter, path_component *out)
         goto exit;
     }
 
-    result = internal_parse_range_component(iter, &out->component.range);
-    // NOTE: invered than expected logic
+    result = urc_crypto_hdkey_range_component_parse(iter, &out->component.range);
     if (result == URC_OK) {
         out->type = path_component_type_range;
         goto exit;
     }
 
-    result = internal_parse_pair_component(iter, &out->component.pair);
-    // NOTE: invered than expected logic
+    result = urc_crypto_hdkey_pair_component_parse(iter, &out->component.pair);
     if (result == URC_OK) {
         out->type = path_component_type_pair;
         goto exit;
@@ -394,7 +391,7 @@ exit:
     return result;
 }
 
-int internal_parse_index_component(CborValue *iter, child_index_component *out)
+int urc_crypto_hdkey_index_component_parse(CborValue *iter, child_index_component *out)
 {
     int result = URC_OK;
 
@@ -414,7 +411,7 @@ exit:
     return result;
 }
 
-int internal_parse_range_component(CborValue *iter, child_range_component *out)
+int urc_crypto_hdkey_range_component_parse(CborValue *iter, child_range_component *out)
 {
     int result = URC_OK;
 
@@ -446,7 +443,7 @@ exit:
     return result;
 }
 
-int internal_parse_pair_component(CborValue *iter, child_pair_component *out)
+int urc_crypto_hdkey_pair_component_parse(CborValue *iter, child_pair_component *out)
 {
     int result = URC_OK;
 
@@ -456,12 +453,12 @@ int internal_parse_pair_component(CborValue *iter, child_pair_component *out)
     CborError err = cbor_value_enter_container(iter, &item);
     CHECK_CBOR_ERROR(err, result, exit);
 
-    result = internal_parse_index_component(&item, &out->internal);
+    result = urc_crypto_hdkey_index_component_parse(&item, &out->internal);
     if (result != URC_OK) {
         goto exit;
     }
 
-    result = internal_parse_index_component(&item, &out->external);
+    result = urc_crypto_hdkey_index_component_parse(&item, &out->external);
     if (result != URC_OK) {
         goto exit;
     }

@@ -1,13 +1,10 @@
 
-#include "cbor.h"
-
 #include "urc/crypto_eckey.h"
-
-#include "macros.h"
 #include "urc/error.h"
-#include "utils.h"
-#include "internals.h"
 
+#include "internals.h"
+#include "macros.h"
+#include "utils.h"
 
 int urc_crypto_eckey_parse(const uint8_t *buffer, size_t len, crypto_eckey *out) {
     CborParser parser;
@@ -75,7 +72,8 @@ int urc_crypto_eckey_parse_impl(CborValue *iter, crypto_eckey *out) {
     err = cbor_value_get_string_length(&map_item, &len);
     CHECK_CBOR_ERROR(err, result, exit);
     if (len == CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE) {
-        result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->key.public_compressed, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE);
+        result =
+            copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->key.public_compressed, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE);
         if (result != URC_OK) {
             goto exit;
         }
@@ -83,8 +81,8 @@ int urc_crypto_eckey_parse_impl(CborValue *iter, crypto_eckey *out) {
         goto leave_and_exit;
     }
     if (len == CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE) {
-        result =
-            copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->key.public_uncompressed, CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE);
+        result = copy_fixed_size_byte_string(&map_item, (uint8_t *)&out->key.public_uncompressed,
+                                             CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE);
         if (result != URC_OK) {
             goto exit;
         }

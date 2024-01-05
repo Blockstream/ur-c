@@ -4,7 +4,6 @@
 
 #include "urc/error.h"
 
-
 extern const int cbor_flags;
 
 int check_map_key(CborValue *cursor, int expected);

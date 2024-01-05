@@ -1,8 +1,6 @@
 
 #include <stdlib.h>
 
-#include "cbor.h"
-
 #include "urc/crypto_account.h"
 #include "urc/error.h"
 #include "urc/tags.h"

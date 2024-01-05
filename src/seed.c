@@ -1,6 +1,4 @@
 
-#include "cbor.h"
-
 #include "urc/crypto_seed.h"
 #include "urc/tags.h"
 

@@ -23,7 +23,7 @@ int urc_jade_rpc_parse(const uint8_t *cbor, size_t cbor_len, char **out)
         if (!*out) {
             return URC_EWALLYINTERNALERROR;
         }
-        MEMFILE stream = MEMFILE_INIT(*out , buffer_len);
+        MEMFILE stream = MEMFILE_INIT(*out, buffer_len);
         err = cbor_value_to_json(&stream, &value, CborConvertIgnoreTags | CborConvertRequireMapStringKeys);
         buffer_len *= 2;
     } while (err == CborErrorIO);

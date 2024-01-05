@@ -1,6 +1,4 @@
 
-#include "cbor.h"
-
 #include "urc/crypto_output.h"
 #include "urc/error.h"
 #include "urc/tags.h"
@@ -17,7 +15,7 @@ int urc_crypto_output_parse(const uint8_t *buffer, size_t len, crypto_output *ou
     CborError err;
     err = cbor_parser_init(buffer, len, cbor_flags, &parser, &iter);
     if (err != CborNoError) {
-        return  URC_ECBORINTERNALERROR;
+        return URC_ECBORINTERNALERROR;
     }
     return urc_crypto_output_parse_impl(&iter, out);
 }

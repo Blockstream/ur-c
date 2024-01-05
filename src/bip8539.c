@@ -99,8 +99,10 @@ static int urc_jade_bip8539_response_parse_impl(const uint8_t *cbor, size_t cbor
 
 int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t **out, size_t *len)
 {
-    const size_t upperbound_request_len = 80;
-    size_t buffer_len = upperbound_request_len;
+    if (!request || !out || !len) {
+        return URC_EINVALIDARG;
+    }
+    size_t buffer_len = 80;
     int result = URC_OK;
     *out = NULL;
     do {

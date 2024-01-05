@@ -1,8 +1,8 @@
 
 #include "urc/crypto_psbt.h"
+#include "urc/error.h"
 
 #include "macros.h"
-#include "urc/error.h"
 #include "utils.h"
 
 int urc_crypto_psbt_parse_impl(CborValue *iter, crypto_psbt *out);

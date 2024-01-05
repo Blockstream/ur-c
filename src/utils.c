@@ -8,7 +8,8 @@
 const int cbor_flags = CborValidateBasic | CborValidateMapKeysAreUnique | CborValidateMapIsSorted | CborValidateUtf8 |
                        CborValidateNoUndefined | CborValidateCompleteData;
 
-int check_map_key(CborValue *cursor, int expected) {
+int check_map_key(CborValue *cursor, int expected)
+{
     int key;
     if (!cbor_value_is_unsigned_integer(cursor)) {
         return URC_EUNEXPECTEDTYPE;
@@ -23,7 +24,8 @@ int check_map_key(CborValue *cursor, int expected) {
     return URC_OK;
 }
 
-bool is_map_key(CborValue *cursor, int expected) {
+bool is_map_key(CborValue *cursor, int expected)
+{
     if (!cbor_value_is_unsigned_integer(cursor)) {
         return false;
     }
@@ -38,7 +40,8 @@ bool is_map_key(CborValue *cursor, int expected) {
     return true;
 }
 
-int check_tag(CborValue *cursor, unsigned long expected_tag) {
+int check_tag(CborValue *cursor, unsigned long expected_tag)
+{
     if (!cbor_value_is_tag(cursor)) {
         return URC_EUNEXPECTEDTYPE;
     }
@@ -53,7 +56,8 @@ int check_tag(CborValue *cursor, unsigned long expected_tag) {
     return URC_OK;
 }
 
-bool is_tag(CborValue *cursor, unsigned long expected_tag) {
+bool is_tag(CborValue *cursor, unsigned long expected_tag)
+{
     if (!cbor_value_is_tag(cursor)) {
         return false;
     }
@@ -68,7 +72,8 @@ bool is_tag(CborValue *cursor, unsigned long expected_tag) {
     return true;
 }
 
-int copy_fixed_size_byte_string(CborValue *cursor, uint8_t *buffer, size_t len) {
+int copy_fixed_size_byte_string(CborValue *cursor, uint8_t *buffer, size_t len)
+{
     if (!cbor_value_is_byte_string(cursor)) {
         return URC_EUNEXPECTEDTYPE;
     }
