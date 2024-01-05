@@ -15,31 +15,6 @@ TEST_GROUP(parser);
 TEST_SETUP(parser) {}
 TEST_TEAR_DOWN(parser) {}
 
-void test_format_key_origin(const crypto_hdkey *key, const char *expected)
-{
-    size_t expected_len = strnlen(expected, BUFLEN);
-    char keypath[BUFLEN];
-    if (RUNNING_ON_VALGRIND) {
-        for (size_t i = 0; i < expected_len; i++) {
-            VALGRIND_MAKE_MEM_UNDEFINED(keypath, i);
-            VALGRIND_MAKE_MEM_NOACCESS(&keypath[i], BUFLEN - i);
-            int len = format_keyorigin(key, (char *)keypath, i);
-            TEST_ASSERT_GREATER_OR_EQUAL(i, len);
-        }
-        VALGRIND_MAKE_MEM_UNDEFINED(keypath, BUFLEN);
-    } else {
-        // buffer too short
-        char keypath[10];
-        int len = format_keyorigin(key, (char *)keypath, 10);
-        TEST_ASSERT_GREATER_OR_EQUAL(10, len);
-    }
-
-    int len = format_keyorigin(key, (char *)keypath, BUFLEN);
-    TEST_ASSERT_GREATER_THAN_INT(0, len);
-    TEST_ASSERT_EQUAL(expected_len, len);
-    TEST_ASSERT_EQUAL_STRING(expected, keypath);
-}
-
 TEST(parser, crypto_seed_deserialize)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#exampletest-vector-1
@@ -100,7 +75,13 @@ TEST(parser, crypto_hdkey_deserialize_1)
                           0x31, 0x38, 0x17, 0xcd, 0xb0, 0x1a, 0x14, 0x94, 0xb9, 0x17, 0xc8, 0x43, 0x6b, 0x35};
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-    test_format_key_origin(&hdkey, "[00000000]");
+    {
+        char *keyorigin;
+        int result = format_keyorigin(&hdkey, &keyorigin);
+        TEST_ASSERT_EQUAL(URC_OK, result);
+        TEST_ASSERT_EQUAL_STRING("[00000000]", keyorigin);
+        urc_string_free(keyorigin);
+    }
     {
         char *out;
         err = urc_bip32_tobase58(&hdkey, &out);
@@ -177,11 +158,19 @@ TEST(parser, crypto_hdkey_deserialize_2)
                           0x3c, 0x84, 0x1f, 0x54, 0x17, 0x0b, 0xa6, 0xe5, 0xc1, 0x2b, 0xe7, 0xfc, 0x12, 0xa6};
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-    test_format_key_origin(&hdkey, "[e9181cf3/44'/1'/1'/0/1]");
     {
-        char derivationpath[BUFLEN];
-        int len = format_keyderivationpath(&hdkey, (char *)&derivationpath, BUFLEN);
-        TEST_ASSERT_EQUAL(0, len);
+        char *keyorigin;
+        int result = format_keyorigin(&hdkey, &keyorigin);
+        TEST_ASSERT_EQUAL(URC_OK, result);
+        TEST_ASSERT_EQUAL_STRING("[e9181cf3/44'/1'/1'/0/1]", keyorigin);
+        urc_string_free(keyorigin);
+    }
+    {
+        char *derivationPath;
+        int result = format_keyderivationpath(&hdkey, &derivationPath);
+        TEST_ASSERT_EQUAL(URC_OK, result);
+        TEST_ASSERT_EQUAL_STRING("", derivationPath);
+        urc_string_free(derivationPath);
     }
     {
         char *out;
@@ -305,14 +294,19 @@ TEST(parser, crypto_output_deserialize_4)
                           0xd0, 0xbc, 0xc8, 0xd5, 0xe8, 0x92, 0x61, 0x18, 0x06, 0xca, 0xfb, 0x03, 0x01, 0xf0};
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-    test_format_key_origin(key, "[d34db33f/44'/0'/0']");
     {
-        char derivationpath[BUFLEN];
-        const char *expected = "/1/*";
-        int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-        TEST_ASSERT_GREATER_THAN_INT(0, len);
-        TEST_ASSERT_LESS_THAN(BUFLEN, len);
-        TEST_ASSERT_EQUAL_STRING(expected, derivationpath);
+        char *keyorigin;
+        int result = format_keyorigin(key, &keyorigin);
+        TEST_ASSERT_EQUAL(URC_OK, result);
+        TEST_ASSERT_EQUAL_STRING("[d34db33f/44'/0'/0']", keyorigin);
+        urc_string_free(keyorigin);
+    }
+    {
+        char *derivationPath;
+        int result = format_keyderivationpath(key, &derivationPath);
+        TEST_ASSERT_EQUAL(URC_OK, result);
+        TEST_ASSERT_EQUAL_STRING("/1/*", derivationPath);
+        urc_string_free(derivationPath);
     }
     {
         char *out;
@@ -405,11 +399,19 @@ TEST(parser, crypto_account_deserialize)
                               0xfa, 0x17, 0x4a, 0xfb, 0x78, 0xd7, 0xf4, 0x78, 0x19, 0x98, 0x84, 0xd9, 0xdd, 0x32};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-        test_format_key_origin(key, "[37b5eed4/44'/0'/0']");
         {
-            char derivationpath[BUFLEN];
-            int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-            TEST_ASSERT_EQUAL(0, len);
+            char *keyorigin;
+            int result = format_keyorigin(key, &keyorigin);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("[37b5eed4/44'/0'/0']", keyorigin);
+            urc_string_free(keyorigin);
+        }
+        {
+            char *derivationPath;
+            int result = format_keyderivationpath(key, &derivationPath);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("", derivationPath);
+            urc_string_free(derivationPath);
         }
         {
             char *out;
@@ -457,11 +459,19 @@ TEST(parser, crypto_account_deserialize)
                               0x51, 0xa8, 0x4e, 0x89, 0xe4, 0xc8, 0xc7, 0x5e, 0xc2, 0x25, 0x90, 0xad, 0x6b, 0x69};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-        test_format_key_origin(key, "[37b5eed4/49'/0'/0']");
         {
-            char derivationpath[BUFLEN];
-            int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-            TEST_ASSERT_EQUAL(0, len);
+            char *keyorigin;
+            int result = format_keyorigin(key, &keyorigin);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("[37b5eed4/49'/0'/0']", keyorigin);
+            urc_string_free(keyorigin);
+        }
+        {
+            char *derivationPath;
+            int result = format_keyderivationpath(key, &derivationPath);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("", derivationPath);
+            urc_string_free(derivationPath);
         }
         {
             char *out;
@@ -509,11 +519,19 @@ TEST(parser, crypto_account_deserialize)
                               0x5a, 0xb2, 0xb5, 0x92, 0xdc, 0x8b, 0xdd, 0xb3, 0xb0, 0x0c, 0x1c, 0x24, 0xf6, 0x3f};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-        test_format_key_origin(key, "[37b5eed4/84'/0'/0']");
         {
-            char derivationpath[BUFLEN];
-            int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-            TEST_ASSERT_EQUAL(0, len);
+            char *keyorigin;
+            int result = format_keyorigin(key, &keyorigin);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("[37b5eed4/84'/0'/0']", keyorigin);
+            urc_string_free(keyorigin);
+        }
+        {
+            char *derivationPath;
+            int result = format_keyderivationpath(key, &derivationPath);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("", derivationPath);
+            urc_string_free(derivationPath);
         }
         {
             char *out;
@@ -555,11 +573,19 @@ TEST(parser, crypto_account_deserialize)
                               0x73, 0x21, 0x18, 0x80, 0xcb, 0x59, 0xb1, 0xef, 0x01, 0x2e, 0x16, 0x8e, 0x05, 0x9a};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-        test_format_key_origin(key, "[37b5eed4/45']");
         {
-            char derivationpath[BUFLEN];
-            int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-            TEST_ASSERT_EQUAL(0, len);
+            char *keyorigin;
+            int result = format_keyorigin(key, &keyorigin);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("[37b5eed4/45']", keyorigin);
+            urc_string_free(keyorigin);
+        }
+        {
+            char *derivationPath;
+            int result = format_keyderivationpath(key, &derivationPath);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("", derivationPath);
+            urc_string_free(derivationPath);
         }
         {
             char *out;
@@ -610,11 +636,19 @@ TEST(parser, crypto_account_deserialize)
                               0xfb, 0x84, 0xcd, 0x5d, 0x6b, 0x26, 0x52, 0x69, 0x38, 0xf9, 0x0c, 0x05, 0x07, 0x11};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-        test_format_key_origin(key, "[37b5eed4/48'/0'/0'/1']");
         {
-            char derivationpath[BUFLEN];
-            int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-            TEST_ASSERT_EQUAL(0, len);
+            char *keyorigin;
+            int result = format_keyorigin(key, &keyorigin);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("[37b5eed4/48'/0'/0'/1']", keyorigin);
+            urc_string_free(keyorigin);
+        }
+        {
+            char *derivationPath;
+            int result = format_keyderivationpath(key, &derivationPath);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("", derivationPath);
+            urc_string_free(derivationPath);
         }
         {
             char *out;
@@ -665,11 +699,19 @@ TEST(parser, crypto_account_deserialize)
                               0x76, 0xce, 0x43, 0x9d, 0x02, 0x37, 0xe8, 0x75, 0x02, 0xeb, 0xbd, 0x3c, 0xa3, 0x46};
         TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, bip32, BIP32_SERIALIZED_LEN);
 
-        test_format_key_origin(key, "[37b5eed4/48'/0'/0'/2']");
         {
-            char derivationpath[BUFLEN];
-            int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-            TEST_ASSERT_EQUAL(0, len);
+            char *keyorigin;
+            int result = format_keyorigin(key, &keyorigin);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("[37b5eed4/48'/0'/0'/2']", keyorigin);
+            urc_string_free(keyorigin);
+        }
+        {
+            char *derivationPath;
+            int result = format_keyderivationpath(key, &derivationPath);
+            TEST_ASSERT_EQUAL(URC_OK, result);
+            TEST_ASSERT_EQUAL_STRING("", derivationPath);
+            urc_string_free(derivationPath);
         }
         {
             char *out;
@@ -723,11 +765,19 @@ TEST(parser, crypto_jadeaccount_deserialize)
     TEST_ASSERT_EQUAL(0, key->key.derived.origin.components[2].component.index.index);
     TEST_ASSERT_TRUE(key->key.derived.origin.components[2].component.index.is_hardened);
 
-    test_format_key_origin(key, "[b6215d6b/84'/0'/0']");
     {
-        char derivationpath[BUFLEN];
-        int len = format_keyderivationpath(key, (char *)&derivationpath, BUFLEN);
-        TEST_ASSERT_EQUAL(0, len);
+        char *keyorigin;
+        int result = format_keyorigin(key, &keyorigin);
+        TEST_ASSERT_EQUAL(URC_OK, result);
+        TEST_ASSERT_EQUAL_STRING("[b6215d6b/84'/0'/0']", keyorigin);
+        urc_string_free(keyorigin);
+    }
+    {
+        char *derivationPath;
+        int result = format_keyderivationpath(key, &derivationPath);
+        TEST_ASSERT_EQUAL(URC_OK, result);
+        TEST_ASSERT_EQUAL_STRING("", derivationPath);
+        urc_string_free(derivationPath);
     }
     {
         char *out;

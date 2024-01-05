@@ -6,6 +6,7 @@
 #endif
 
 #include "wally_bip32.h"
+#include "wally_core.h"
 
 #include "urc/crypto_hdkey.h"
 #include "urc/tags.h"
@@ -622,72 +623,111 @@ bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN
     return true;
 }
 
-int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t out_len)
+int format_hdkey_path_component(const path_component *component, char *out, size_t out_len)
 {
-    int total_len = 0;
-    {
-        uint32_t fpr = 0;
-        switch (hdkey->type) {
-        case hdkey_type_master:
-            fpr = 0;
-            break;
-        case hdkey_type_derived:
-            fpr = hdkey->key.derived.origin.source_fingerprint;
-            if (fpr == 0) {
-                fpr = hdkey->key.derived.parent_fingerprint;
-            }
-            break;
-        default:
-            return -1;
+    switch (component->type) {
+    case path_component_type_index:
+        return snprintf(out, out_len, "/%d%s", component->component.index.index,
+                        component->component.index.is_hardened ? "'" : "");
+    case path_component_type_range: {
+        const child_range_component *range = &component->component.range;
+        int len = snprintf(out, out_len, "/<%d%s", range->low, range->is_hardened ? "'" : "");
+        size_t total_len = len;
+        if (len < 0 || (size_t)len >= out_len) {
+            return len;
         }
-        int len = snprintf(out, out_len, "[%08x", fpr);
-        total_len += len;
-        // either an error or an out-of-space
-        if (len < 0 || (size_t)total_len >= out_len) {
-            return len < 0 ? len : total_len;
-        }
-    }
-    {
-        const path_component *comps = NULL;
-        size_t comps_count = 0;
-        switch (hdkey->type) {
-        case hdkey_type_master:
-            // no components
-            break;
-        case hdkey_type_derived:
-            comps = hdkey->key.derived.origin.components;
-            comps_count = hdkey->key.derived.origin.components_count;
-            break;
-        default:
-            return -1;
-        }
-        for (size_t idx = 0; idx < comps_count; idx++) {
-            const path_component *comp = &(comps[idx]);
-            int len = 0;
-            switch (comp->type) {
-            case path_component_type_index:
-                len = snprintf(&out[total_len], out_len - total_len, "/%d%s", comp->component.index.index,
-                               comp->component.index.is_hardened ? "'" : "");
-                break;
-            default:
-                return -1;
-            }
+        for (uint32_t i = range->low + 1; i <= range->high; i++) {
+            len = snprintf(&out[total_len], out_len - total_len, ";%d%s", i, range->is_hardened ? "'" : "");
             total_len += len;
-            // either an error or an out-of-space
-            if (len < 0 || (size_t)total_len >= out_len) {
-                return len < 0 ? len : total_len;
-            }
+            if (len < 0)
+                return len;
+            if (total_len >= out_len)
+                return (int)total_len;
         }
+        len = snprintf(&out[total_len], out_len - total_len, ">");
+        total_len += len;
+        if (len < 0)
+            return len;
+        return (int)total_len;
     }
-    int len = snprintf(&out[total_len], out_len - total_len, "]");
-    if (len < 0) {
-        return len;
+    case path_component_type_wildcard:
+        return snprintf(out, out_len, "/*");
+    case path_component_type_pair: {
+        char *hardened = component->component.pair.external.is_hardened ? "'" : "";
+        return snprintf(out, out_len, "/<%d%s,%d%s>", component->component.pair.external.index, hardened,
+                        component->component.pair.internal.index, hardened);
     }
-    total_len += len;
-    return total_len;
+    default:
+        assert(false);
+    }
+    return -1;
 }
 
-int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t out_len)
+int format_keyorigin(const crypto_hdkey *hdkey, char **out)
+{
+    uint32_t fpr = 0;
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        fpr = 0;
+        break;
+    case hdkey_type_derived:
+        fpr = hdkey->key.derived.origin.source_fingerprint;
+        if (fpr == 0) {
+            fpr = hdkey->key.derived.parent_fingerprint;
+        }
+        break;
+    default:
+        return URC_EINVALIDARG;
+    }
+
+    const path_component *comps = NULL;
+    size_t comps_count = 0;
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        // no components
+        break;
+    case hdkey_type_derived:
+        comps = hdkey->key.derived.origin.components;
+        comps_count = hdkey->key.derived.origin.components_count;
+        break;
+    default:
+        return URC_EINVALIDARG;
+    }
+
+    size_t out_len = 16; // once *2, it should cover the average length of a key origin
+    size_t total_len = 0;
+    int result = URC_OK;
+    *out = NULL;
+    do {
+        wally_free(*out);
+        out_len *= 2;
+        *out = wally_malloc(out_len);
+
+        int len = snprintf(*out, out_len, "[%08x", fpr);
+        CHECK_SNPRINTF_BOUNDS(len, result, exit);
+        total_len += len;
+        total_len = total_len < out_len ? total_len : out_len;
+
+        for (size_t idx = 0; idx < comps_count; idx++) {
+            len = format_hdkey_path_component(&comps[idx], &(*out)[total_len], out_len - total_len);
+            CHECK_SNPRINTF_BOUNDS(len, result, exit);
+            total_len += len;
+            total_len = total_len < out_len ? total_len : out_len;
+        }
+        len = snprintf(&(*out)[total_len], out_len - total_len, "]");
+        CHECK_SNPRINTF_BOUNDS(len, result, exit);
+        total_len += len;
+    } while (total_len >= out_len);
+
+exit:
+    if (result != URC_OK) {
+        wally_free(*out);
+        *out = NULL;
+    }
+    return result;
+}
+
+int format_keyderivationpath(const crypto_hdkey *hdkey, char **out)
 {
     switch (hdkey->type) {
     case hdkey_type_master:
@@ -697,32 +737,31 @@ int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t out_le
     default:
         break;
     }
+    size_t out_len = 4; // once *2, it should cover the average length of a key derivation path
+    size_t total_len = 0;
+    int result = URC_OK;
+    *out = NULL;
+    do {
+        wally_free(*out);
+        out_len *= 2;
+        *out = wally_malloc(out_len);
+        *out[0] = '\0';
 
-    int total_len = 0;
-    for (size_t idx = 0; idx < hdkey->key.derived.children.components_count; idx++) {
-        const path_component *comp = &hdkey->key.derived.children.components[idx];
-        int len = 0;
-        switch (comp->type) {
-        case path_component_type_index:
-            if (comp->component.index.is_hardened) {
-                len = snprintf(&out[total_len], out_len - total_len, "/%d'", comp->component.index.index);
-            } else {
-                len = snprintf(&out[total_len], out_len - total_len, "/%d", comp->component.index.index);
-            }
-            break;
-        case path_component_type_wildcard:
-            len = snprintf(&out[total_len], out_len - total_len, "/*");
-            break;
-        default:
-            return -1;
+        const path_component *comps = hdkey->key.derived.children.components;
+        size_t comps_count = comps_count = hdkey->key.derived.children.components_count;
+        for (size_t idx = 0; idx < comps_count; idx++) {
+            int len = format_hdkey_path_component(&comps[idx], &(*out)[total_len], out_len - total_len);
+            CHECK_SNPRINTF_BOUNDS(len, result, exit);
+            total_len += len;
+            total_len = total_len < out_len ? total_len : out_len;
         }
-        total_len += len;
-        if (len < 0 || (size_t)total_len >= out_len) {
-            return len < 0 ? len : total_len;
-        }
+    } while (total_len >= out_len);
+exit:
+    if (result != URC_OK) {
+        wally_free(*out);
+        *out = NULL;
     }
-
-    return total_len;
+    return result;
 }
 
 int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out)

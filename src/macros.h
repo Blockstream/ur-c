@@ -43,3 +43,9 @@
         (urcerror) = URC_EWALLYINTERNALERROR;                                                                                    \
         goto exit_point;                                                                                                         \
     }
+
+#define CHECK_SNPRINTF_BOUNDS(cmd_len, result, exit_point)                                                                       \
+    if ((cmd_len) < 0) {                                                                                                         \
+        (result) = URC_EINTERNALERROR;                                                                                           \
+        goto exit_point;                                                                                                         \
+    }
