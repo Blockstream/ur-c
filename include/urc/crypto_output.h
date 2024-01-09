@@ -32,11 +32,10 @@ typedef struct {
     } keytype;
 } output_keyexp;
 
-
 #define URC_RAWSCRIPT_LEN 32
 typedef struct {
     union {
-        output_keyexp key;           // p2pkh
+        output_keyexp key; // p2pkh
         uint8_t raw[URC_RAWSCRIPT_LEN];
     } output;
     enum {
@@ -50,6 +49,15 @@ typedef struct {
 } crypto_output;
 
 int urc_crypto_output_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, crypto_output *out);
+
+typedef enum {
+    // output descriptor represented as is
+    urc_crypto_output_format_mode_default,
+    // if derivation path is empty, and key origin counts to 2, an extra ``/0/*`` is added as derivation path
+    urc_crypto_output_format_mode_BIP44_compatible,
+} urc_crypto_output_format_mode;
+// ``out`` must be freed by caller using urc_string_free function
+int urc_crypto_output_format(const crypto_output *output, urc_crypto_output_format_mode mode, char **out);
 
 #ifdef __cplusplus
 }

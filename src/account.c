@@ -1,8 +1,8 @@
 
-#include <stdlib.h>
+#include "wally_core.h"
 
+#include "urc/core.h"
 #include "urc/crypto_account.h"
-#include "urc/error.h"
 #include "urc/tags.h"
 
 #include "internals.h"
@@ -96,4 +96,28 @@ exit:
         result = URC_ETAPROOTNOTSUPPORTED;
     }
     return result;
+}
+
+int urc_crypto_account_format(const crypto_account *account, urc_crypto_output_format_mode mode, char **out[])
+{
+    if (!account || !out) {
+        return URC_EINVALIDARG;
+    }
+
+    size_t array_size = sizeof(char *) * (account->descriptors_count + 1);
+    *out = wally_malloc(array_size);
+    if (!*out) {
+        return URC_ENOMEM;
+    }
+    (*out)[account->descriptors_count] = NULL;
+
+    for (size_t idx = 0; idx < account->descriptors_count; idx++) {
+        int result = urc_crypto_output_format(&account->descriptors[idx], mode, &(*out)[idx]);
+        if (result != URC_OK) {
+            urc_string_array_free(*out);
+            *out = NULL;
+            return result;
+        }
+    }
+    return URC_OK;
 }

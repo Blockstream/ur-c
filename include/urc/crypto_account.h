@@ -27,6 +27,10 @@ int urc_crypto_account_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, 
 // parse an account in jade format, descriptors are not introduced by tag 308
 int urc_jade_account_deserialize(const uint8_t *cbor_buffer, size_t len, crypto_account *out);
 
+// *out[] must be freed using urc_string_array_free()
+// last element of *out[] is NULL
+int urc_crypto_account_format(const crypto_account *account, urc_crypto_output_format_mode mode, char **out[]);
+
 #ifdef __cplusplus
 }
 #endif

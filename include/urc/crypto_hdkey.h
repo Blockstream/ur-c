@@ -109,13 +109,9 @@ typedef struct {
 } crypto_hdkey;
 
 int urc_crypto_hdkey_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, crypto_hdkey *out);
-#define BIP32_SERIALIZED_LEN 78
-bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN]);
 
 // ``out`` must be freed by caller using urc_string_free function
-int format_keyorigin(const crypto_hdkey *hdkey, char **out);
-int format_keyderivationpath(const crypto_hdkey *hdkey, char **out);
-int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out);
+int urc_crypto_hdkey_format(const crypto_hdkey *hdkey, char **out);
 
 #ifdef __cplusplus
 }

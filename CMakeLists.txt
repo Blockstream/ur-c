@@ -10,6 +10,7 @@ option(URC_FETCH_DEPS "tell cmake to go fetch dependencies itself" OFF)
 option(URC_ENABLE_TESTS "enable tests" OFF)
 option(URC_ENABLE_FUZZ_TESTS "enable fuzzy tests" OFF)
 option(URC_ENABLE_COVERAGE "enable code coverage" OFF)
+option(URC_ENABLE_VALGRIND "enable valgrind tests" OFF)
 
 ### dependencies
 include(cmake/dependencies.cmake)

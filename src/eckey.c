@@ -5,6 +5,7 @@
 #include "internals.h"
 #include "macros.h"
 #include "utils.h"
+#include <wally_core.h>
 
 int urc_crypto_eckey_deserialize(const uint8_t *buffer, size_t len, crypto_eckey *out)
 {
@@ -98,4 +99,31 @@ leave_and_exit:
     LEAVE_CONTAINER_SAFELY(iter, &map_item, result, exit);
 exit:
     return result;
+}
+
+int urc_crypto_eckey_format(const crypto_eckey *eckey, char **out)
+{
+    if (!eckey || !out) {
+        return URC_EINVALIDARG;
+    }
+
+    *out = NULL;
+    int wallyerr = WALLY_OK;
+    switch (eckey->type) {
+    case eckey_type_private:
+         wallyerr = wally_hex_from_bytes(eckey->key.prvate, CRYPTO_ECKEY_PRIVATE_SIZE, out);
+        break;
+    case eckey_type_public_compressed:
+        wallyerr = wally_hex_from_bytes(eckey->key.public_compressed, CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE, out);
+        break;
+    case eckey_type_public_uncompressed:
+        wallyerr = wally_hex_from_bytes(eckey->key.public_uncompressed, CRYPTO_ECKEY_PUBLIC_UNCOMPRESSED_SIZE, out);
+        break;
+    default:
+        return URC_EINVALIDARG;
+    }
+    if (wallyerr != WALLY_OK) {
+        return URC_EWALLYINTERNALERROR;
+    }
+    return URC_OK;
 }

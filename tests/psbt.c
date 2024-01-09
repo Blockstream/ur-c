@@ -46,4 +46,5 @@ TEST(psbt, test_vector_1)
     TEST_ASSERT_EQUAL(URC_OK, result);
     TEST_ASSERT_EQUAL(raw_len, psbt.psbt_len);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(raw_psbt, psbt.psbt, raw_len);
+    urc_crypto_psbt_free(&psbt);
 }

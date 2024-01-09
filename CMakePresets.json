@@ -39,6 +39,10 @@
                     "type": "BOOL",
                     "value": "ON"
                 },
+                "URC_ENABLE_VALGRIND": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
                     "value": "Debug"

@@ -29,6 +29,9 @@ typedef struct {
 
 int urc_crypto_eckey_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, crypto_eckey *out);
 
+// ``out`` must be freed by caller using urc_string_free function
+int urc_crypto_eckey_format(const crypto_eckey *eckey, char **out);
+
 #ifdef __cplusplus
 }
 #endif

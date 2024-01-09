@@ -1,4 +1,6 @@
 
+#include "urc/core.h"
+#include "urc/error.h"
 #ifdef WIN32
 #include <winsock2.h>
 #else
@@ -470,157 +472,141 @@ exit:
     return result;
 }
 
-uint32_t urc_hdkey_getversion(const crypto_hdkey *hdkey)
+int urc_hdkey_getversion(const crypto_hdkey *hdkey, uint32_t *out)
 {
+    *out = 0;
     switch (hdkey->type) {
     case hdkey_type_master:
-        return 0x0488ADE4;
+        *out = 0x0488ADE4;
+        break;
     case hdkey_type_derived:
         switch (hdkey->key.derived.useinfo.network) {
         case CRYPTO_COININFO_MAINNET:
-            return hdkey->key.derived.is_private ? 0x0488ADE4 : 0x0488B21E;
+            *out = hdkey->key.derived.is_private ? 0x0488ADE4 : 0x0488B21E;
+            break;
         case CRYPTO_COININFO_TESTNET:
-            return hdkey->key.derived.is_private ? 0x04358394 : 0x043587CF;
+            *out = hdkey->key.derived.is_private ? 0x04358394 : 0x043587CF;
+            break;
         default:
-            return 0;
+            return URC_EUNHANDLEDCASE;
         }
+        break;
     default:
-        assert(false);
+        return URC_EUNHANDLEDCASE;
     }
-    assert(false);
-    return 0;
+    return URC_OK;
 }
 
-uint8_t urc_hdkey_getdepth(const crypto_hdkey *hdkey)
+int urc_hdkey_getdepth(const crypto_hdkey *hdkey, uint8_t *out)
 {
+    *out = 0;
     switch (hdkey->type) {
     case hdkey_type_master:
-        return 0x00;
+        break;
     case hdkey_type_derived: {
-        uint8_t depth = hdkey->key.derived.origin.components_count;
+        *out = hdkey->key.derived.origin.components_count;
         for (size_t idx = 0; idx < hdkey->key.derived.children.components_count; idx++) {
             if (hdkey->key.derived.children.components[idx].type == path_component_type_index) {
-                depth += 1;
+                *out += 1;
             }
         }
-        return depth;
+        break;
     }
     default:
-        assert(false);
+        return URC_EUNHANDLEDCASE;
     }
-    assert(false);
-    return 0;
+    return URC_OK;
 }
 
-uint32_t urc_hdkey_getchildnumber(const crypto_hdkey *hdkey)
+int urc_hdkey_getchildnumber(const crypto_hdkey *hdkey, uint32_t *out)
 {
+    *out = 0;
     switch (hdkey->type) {
     case hdkey_type_master:
-        return 0;
+        break;
     case hdkey_type_derived:
         if (hdkey->key.derived.origin.components_count == 0) {
-            return 0;
+            break;
         }
         const size_t last_origincomponent_idx = hdkey->key.derived.origin.components_count - 1;
         const path_component *last_origincomponent = &hdkey->key.derived.origin.components[last_origincomponent_idx];
         assert(last_origincomponent->type == path_component_type_index);
-        uint32_t hardened_multiplier = 0x80000000 * last_origincomponent->component.index.is_hardened;
-        uint32_t childnum = last_origincomponent->component.index.index + hardened_multiplier;
+        const uint32_t hardened_flag = last_origincomponent->component.index.is_hardened ? 0x80000000 : 0;
+        const uint32_t childnum = last_origincomponent->component.index.index | hardened_flag;
         if (hdkey->key.derived.children.components_count == 0) {
-            return childnum;
+            *out = childnum;
+            break;
         }
 
         const size_t last_derivedcomponent_idx = hdkey->key.derived.children.components_count - 1;
         __attribute__((unused)) const path_component *last_derivedcomponent =
             &hdkey->key.derived.children.components[last_derivedcomponent_idx];
         assert(last_derivedcomponent->type == path_component_type_wildcard);
-        return 0xfffffffe;
+        *out = 0xfffffffe;
+        break;
     default:
-        assert(false);
+        return URC_EUNHANDLEDCASE;
     }
-    assert(false);
-    return 0;
+    return URC_OK;
 }
 
-uint32_t urc_hdkey_getparentfingerprint(const crypto_hdkey *hdkey)
+int urc_hdkey_getparentfingerprint(const crypto_hdkey *hdkey, uint32_t *out)
+{
+    *out = 0;
+    switch (hdkey->type) {
+    case hdkey_type_master:
+        break;
+    case hdkey_type_derived:
+        *out = hdkey->key.derived.parent_fingerprint;
+        break;
+    default:
+        return URC_EUNHANDLEDCASE;
+    }
+    return URC_OK;
+}
+
+int urc_hdkey_getchaincode(const crypto_hdkey *hdkey, uint8_t **out)
 {
     switch (hdkey->type) {
     case hdkey_type_master:
-        return 0;
+        *out = (uint8_t *)hdkey->key.master.chaincode;
+        break;
     case hdkey_type_derived:
-        return hdkey->key.derived.parent_fingerprint;
+        *out = (uint8_t *)hdkey->key.derived.chaincode;
+        break;
     default:
-        assert(false);
+        return URC_EUNHANDLEDCASE;
     }
-    assert(false);
-    return 0;
+    return URC_OK;
 }
 
-uint8_t *urc_hdkey_getchaincode(const crypto_hdkey *hdkey)
+int urc_hdkey_getkeydata(const crypto_hdkey *hdkey, uint8_t **out)
 {
     switch (hdkey->type) {
     case hdkey_type_master:
-        return (uint8_t *)hdkey->key.master.chaincode;
+        *out = (uint8_t *)hdkey->key.master.keydata;
+        break;
     case hdkey_type_derived:
-        return (uint8_t *)hdkey->key.derived.chaincode;
+        *out = (uint8_t *)hdkey->key.derived.keydata;
+        break;
     default:
-        assert(false);
+        return URC_EUNHANDLEDCASE;
     }
-    assert(false);
-    return 0;
+    return URC_OK;
 }
 
-uint8_t *urc_hdkey_getkeydata(const crypto_hdkey *hdkey)
+int urc_hdkey_getkeyorigin_levels(const crypto_hdkey *hdkey, size_t *out)
 {
     switch (hdkey->type) {
     case hdkey_type_master:
-        return (uint8_t *)hdkey->key.master.keydata;
+        *out = 0;
+        return URC_OK;
     case hdkey_type_derived:
-        return (uint8_t *)hdkey->key.derived.keydata;
+        *out = hdkey->key.derived.origin.components_count;
+        return URC_OK;
     default:
-        assert(false);
+        return URC_EUNHANDLEDCASE;
     }
-    assert(false);
-    return NULL;
-}
-
-bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN])
-{
-    if (hdkey->type == hdkey_type_na) {
-        return false;
-    }
-    size_t cursor = 0;
-
-    uint32_t *version = (uint32_t *)&out[cursor]; // 0 - 3
-    cursor += sizeof(uint32_t);
-    *version = htonl(urc_hdkey_getversion(hdkey));
-    if (*version == 0) {
-        return false;
-    }
-
-    uint8_t *depth = &out[cursor]; // 4
-    cursor += sizeof(uint8_t);
-    *depth = urc_hdkey_getdepth(hdkey);
-
-    uint32_t *parent_fingerprint = (uint32_t *)&out[cursor]; // 5 - 8
-    cursor += sizeof(uint32_t);
-    *parent_fingerprint = htonl(urc_hdkey_getparentfingerprint(hdkey));
-
-    uint32_t *child_number = (uint32_t *)&out[cursor]; // 9 - 12
-    cursor += sizeof(uint32_t);
-    *child_number = htonl(urc_hdkey_getchildnumber(hdkey));
-
-    uint8_t(*chain_code)[CRYPTO_HDKEY_CHAINCODE_SIZE] = (uint8_t(*)[CRYPTO_HDKEY_CHAINCODE_SIZE]) & out[cursor]; // 13 - 44
-    cursor += CRYPTO_HDKEY_CHAINCODE_SIZE;
-    const uint8_t *hd_chaincode = urc_hdkey_getchaincode(hdkey);
-    memcpy(chain_code, hd_chaincode, CRYPTO_HDKEY_CHAINCODE_SIZE);
-
-    uint8_t(*key_data)[CRYPTO_HDKEY_KEYDATA_SIZE] = (uint8_t(*)[CRYPTO_HDKEY_KEYDATA_SIZE]) & out[cursor]; // 45 - 77
-    cursor += CRYPTO_HDKEY_KEYDATA_SIZE;
-    const uint8_t *hd_keydata = urc_hdkey_getkeydata(hdkey);
-    memcpy(key_data, hd_keydata, CRYPTO_HDKEY_KEYDATA_SIZE);
-
-    return true;
 }
 
 int format_hdkey_path_component(const path_component *component, char *out, size_t out_len)
@@ -658,12 +644,11 @@ int format_hdkey_path_component(const path_component *component, char *out, size
                         component->component.pair.internal.index, hardened);
     }
     default:
-        assert(false);
+        return URC_EINVALIDARG;
     }
-    return -1;
 }
 
-int format_keyorigin(const crypto_hdkey *hdkey, char **out)
+int format_keyorigin(const crypto_hdkey *hdkey, char *out, size_t out_len)
 {
     uint32_t fpr = 0;
     switch (hdkey->type) {
@@ -682,100 +667,85 @@ int format_keyorigin(const crypto_hdkey *hdkey, char **out)
 
     const path_component *comps = NULL;
     size_t comps_count = 0;
-    switch (hdkey->type) {
-    case hdkey_type_master:
-        // no components
-        break;
-    case hdkey_type_derived:
+    if (hdkey->type == hdkey_type_derived) {
         comps = hdkey->key.derived.origin.components;
         comps_count = hdkey->key.derived.origin.components_count;
-        break;
-    default:
-        return URC_EINVALIDARG;
     }
 
-    size_t out_len = 16; // once *2, it should cover the average length of a key origin
-    size_t total_len = 0;
-    int result = URC_OK;
-    *out = NULL;
-    do {
-        wally_free(*out);
-        out_len *= 2;
-        *out = wally_malloc(out_len);
+    int total_len = 0;
+    int len = snprintf(out, out_len, "[%08x", fpr);
+    CHECK_SNPRINTF_BOUNDS(out_len, total_len, len);
 
-        int len = snprintf(*out, out_len, "[%08x", fpr);
-        CHECK_SNPRINTF_BOUNDS(len, result, exit);
-        total_len += len;
-        total_len = total_len < out_len ? total_len : out_len;
-
-        for (size_t idx = 0; idx < comps_count; idx++) {
-            len = format_hdkey_path_component(&comps[idx], &(*out)[total_len], out_len - total_len);
-            CHECK_SNPRINTF_BOUNDS(len, result, exit);
-            total_len += len;
-            total_len = total_len < out_len ? total_len : out_len;
-        }
-        len = snprintf(&(*out)[total_len], out_len - total_len, "]");
-        CHECK_SNPRINTF_BOUNDS(len, result, exit);
-        total_len += len;
-    } while (total_len >= out_len);
-
-exit:
-    if (result != URC_OK) {
-        wally_free(*out);
-        *out = NULL;
+    for (size_t idx = 0; idx < comps_count; idx++) {
+        len = format_hdkey_path_component(&comps[idx], &out[total_len], out_len - total_len);
+        CHECK_SNPRINTF_BOUNDS(out_len, total_len, len);
     }
-    return result;
+    len = snprintf(&out[total_len], out_len - total_len, "]");
+    CHECK_SNPRINTF_BOUNDS(out_len, total_len, len);
+    return total_len;
 }
 
-int format_keyderivationpath(const crypto_hdkey *hdkey, char **out)
+int format_keyderivationpath(const crypto_hdkey *hdkey, char *out, size_t out_len)
 {
-    switch (hdkey->type) {
-    case hdkey_type_master:
-        return 0;
-    case hdkey_type_na:
+    if (hdkey->type == hdkey_type_na) {
         return -1;
-    default:
-        break;
     }
-    size_t out_len = 4; // once *2, it should cover the average length of a key derivation path
-    size_t total_len = 0;
-    int result = URC_OK;
-    *out = NULL;
-    do {
-        wally_free(*out);
-        out_len *= 2;
-        *out = wally_malloc(out_len);
-        *out[0] = '\0';
+    if (hdkey->type == hdkey_type_master) {
+        return 0;
+    }
+    if (out_len == 0) {
+        return -1;
+    }
+    int total_len = 0;
 
-        const path_component *comps = hdkey->key.derived.children.components;
-        size_t comps_count = comps_count = hdkey->key.derived.children.components_count;
-        for (size_t idx = 0; idx < comps_count; idx++) {
-            int len = format_hdkey_path_component(&comps[idx], &(*out)[total_len], out_len - total_len);
-            CHECK_SNPRINTF_BOUNDS(len, result, exit);
-            total_len += len;
-            total_len = total_len < out_len ? total_len : out_len;
-        }
-    } while (total_len >= out_len);
-exit:
-    if (result != URC_OK) {
-        wally_free(*out);
-        *out = NULL;
+    const path_component *comps = hdkey->key.derived.children.components;
+    size_t comps_count = comps_count = hdkey->key.derived.children.components_count;
+    for (size_t idx = 0; idx < comps_count; idx++) {
+        int len = format_hdkey_path_component(&comps[idx], &out[total_len], out_len - total_len);
+        CHECK_SNPRINTF_BOUNDS(out_len, total_len, len);
     }
-    return result;
+    return total_len;
 }
 
-int urc_bip32_tobase58(const crypto_hdkey *hdkey, char **out)
+int urc_crypto_hdkey_format(const crypto_hdkey *hdkey, char **out)
 {
     if (hdkey == NULL || hdkey->type == hdkey_type_na || out == NULL) {
         return URC_EINVALIDARG;
     }
 
-    const uint32_t version = urc_hdkey_getversion(hdkey);
-    const uint8_t depth = urc_hdkey_getdepth(hdkey);
-    const uint32_t child_num = urc_hdkey_getchildnumber(hdkey);
-    const uint32_t parent_fpr = htonl(urc_hdkey_getparentfingerprint(hdkey));
-    const uint8_t *chaincode = urc_hdkey_getchaincode(hdkey);
-    uint8_t *keydata = urc_hdkey_getkeydata(hdkey);
+    int result = URC_OK;
+
+    uint32_t version;
+    result = urc_hdkey_getversion(hdkey, &version);
+    if (result != URC_OK) {
+        return result;
+    }
+    uint8_t depth;
+    result = urc_hdkey_getdepth(hdkey, &depth);
+    if (result != URC_OK) {
+        return result;
+    }
+    uint32_t child_num;
+    result = urc_hdkey_getchildnumber(hdkey, &child_num);
+    if (result != URC_OK) {
+        return result;
+    }
+    uint32_t parent_fpr;
+    result = urc_hdkey_getparentfingerprint(hdkey, &parent_fpr);
+    if (result != URC_OK) {
+        return result;
+    }
+    parent_fpr = htonl(parent_fpr);
+    uint8_t *chaincode;
+    result = urc_hdkey_getchaincode(hdkey, &chaincode);
+    if (result != URC_OK) {
+        return result;
+    }
+    uint8_t *keydata;
+    result = urc_hdkey_getkeydata(hdkey, &keydata);
+    if (result != URC_OK) {
+        return result;
+    }
     unsigned char *priv_key = NULL;
     size_t priv_key_len = 0;
     unsigned char *pub_key = NULL;

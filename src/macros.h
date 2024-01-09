@@ -44,8 +44,9 @@
         goto exit_point;                                                                                                         \
     }
 
-#define CHECK_SNPRINTF_BOUNDS(cmd_len, result, exit_point)                                                                       \
-    if ((cmd_len) < 0) {                                                                                                         \
-        (result) = URC_EINTERNALERROR;                                                                                           \
-        goto exit_point;                                                                                                         \
-    }
+#define CHECK_SNPRINTF_BOUNDS(buffer_len, accumulated_len, snprintf_len)                                                         \
+    if ((snprintf_len) < 0)                                                                                                      \
+        return URC_EINTERNALERROR;                                                                                               \
+    (accumulated_len) += (snprintf_len);                                                                                         \
+    if ((size_t)(accumulated_len) >= (buffer_len))                                                                               \
+        return (accumulated_len);
