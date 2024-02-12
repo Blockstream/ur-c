@@ -22,7 +22,9 @@ TEST_GROUP_RUNNER(formatter) {
 }
 
 TEST_GROUP_RUNNER(jade_rpc) {
-    RUN_TEST_CASE(jade_rpc, parse_jade_pin);
+    RUN_TEST_CASE(jade_rpc, parse_jade_pin_1);
+    RUN_TEST_CASE(jade_rpc, parse_jade_pin_2);
+    RUN_TEST_CASE(jade_rpc, parse_jade_pin_3);
 }
 
 static void RunAllTests(void) {
