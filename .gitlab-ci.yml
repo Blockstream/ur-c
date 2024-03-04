@@ -58,7 +58,7 @@ mac-test:
   tags: [ osx-ia ]
   stage: test
   script:
-    - python3 -m venv venv
+    - virtualenv venv
     - source venv/bin/activate
     - cmake --preset default
     - cmake --build --preset default
