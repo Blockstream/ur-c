@@ -6,7 +6,8 @@
 #include "macros.h"
 #include "utils.h"
 
-int urc_crypto_eckey_parse(const uint8_t *buffer, size_t len, crypto_eckey *out) {
+int urc_crypto_eckey_deserialize(const uint8_t *buffer, size_t len, crypto_eckey *out)
+{
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -14,10 +15,11 @@ int urc_crypto_eckey_parse(const uint8_t *buffer, size_t len, crypto_eckey *out)
     if (err != CborNoError) {
         return URC_ECBORINTERNALERROR;
     }
-    return urc_crypto_eckey_parse_impl(&iter, out);
+    return urc_crypto_eckey_deserialize_impl(&iter, out);
 }
 
-int urc_crypto_eckey_parse_impl(CborValue *iter, crypto_eckey *out) {
+int urc_crypto_eckey_deserialize_impl(CborValue *iter, crypto_eckey *out)
+{
     out->type = eckey_type_na;
     int result = URC_OK;
 

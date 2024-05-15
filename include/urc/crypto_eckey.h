@@ -27,7 +27,7 @@ typedef struct {
     } type;
 } crypto_eckey;
 
-int urc_crypto_eckey_parse(const uint8_t *buffer, size_t len, crypto_eckey *out);
+int urc_crypto_eckey_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, crypto_eckey *out);
 
 #ifdef __cplusplus
 }

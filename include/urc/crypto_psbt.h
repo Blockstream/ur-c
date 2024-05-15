@@ -16,7 +16,7 @@ typedef struct {
 
 } crypto_psbt;
 
-int urc_crypto_psbt_parse(const uint8_t *buffer, size_t len, crypto_psbt *out);
+int urc_crypto_psbt_deserialize(const uint8_t *buffer, size_t len, crypto_psbt *out);
 
 #ifdef __cplusplus
 }

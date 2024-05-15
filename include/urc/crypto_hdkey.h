@@ -108,7 +108,7 @@ typedef struct {
     } type;
 } crypto_hdkey;
 
-int urc_crypto_hdkey_parse(const uint8_t *buffer, size_t len, crypto_hdkey *out);
+int urc_crypto_hdkey_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, crypto_hdkey *out);
 #define BIP32_SERIALIZED_LEN 78
 bool bip32_serialize(const crypto_hdkey *hdkey, uint8_t out[BIP32_SERIALIZED_LEN]);
 // return values of following functions follow the snprintf convention:

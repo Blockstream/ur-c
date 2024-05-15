@@ -20,7 +20,7 @@ int urc_crypto_hdkey_coininfo_parse(CborValue *iter, crypto_coininfo *out);
 int urc_crypto_hdkey_keypath_parse(CborValue *iter, crypto_keypath *out);
 int urc_crypto_hdkey_pathcomponent_parse(CborValue *iter, path_component *out);
 
-int urc_crypto_hdkey_parse(const uint8_t *buffer, size_t len, crypto_hdkey *out)
+int urc_crypto_hdkey_deserialize(const uint8_t *buffer, size_t len, crypto_hdkey *out)
 {
     CborParser parser;
     CborValue iter;
@@ -29,10 +29,10 @@ int urc_crypto_hdkey_parse(const uint8_t *buffer, size_t len, crypto_hdkey *out)
     if (err != CborNoError) {
         return URC_ECBORINTERNALERROR;
     }
-    return urc_crypto_hdkey_parse_impl(&iter, out);
+    return urc_crypto_hdkey_deserialize_impl(&iter, out);
 }
 
-int urc_crypto_hdkey_parse_impl(CborValue *iter, crypto_hdkey *out)
+int urc_crypto_hdkey_deserialize_impl(CborValue *iter, crypto_hdkey *out)
 {
     int result = URC_OK;
     out->type = hdkey_type_na;

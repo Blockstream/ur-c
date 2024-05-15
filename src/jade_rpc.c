@@ -7,7 +7,7 @@
 #include "macros.h"
 #include "utils.h"
 
-int urc_jade_rpc_parse(const uint8_t *cbor, size_t cbor_len, char **out)
+int urc_jade_rpc_deserialize(const uint8_t *cbor, size_t cbor_len, char **out)
 {
     CborParser parser;
     CborValue value;

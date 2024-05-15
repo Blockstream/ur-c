@@ -27,7 +27,7 @@ TEST(formatter, jaderequest_format) {
 
     uint8_t *buffer;
     size_t buflen = 0;
-    int err = urc_jade_bip8539_request_format(&request, &buffer, &buflen);
+    int err = urc_jade_bip8539_request_serialize(&request, &buffer, &buflen);
     TEST_ASSERT_EQUAL(URC_OK, err);
     const char *expected = "a3696e756d5f776f726473181865696e646578190400667075626b65795821037aa2120135ae201c0586ad9f450ad3f4641dd"
                            "abcd9bd3e692944d9d8fd8ed8d2";

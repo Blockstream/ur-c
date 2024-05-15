@@ -16,7 +16,7 @@ typedef struct {
 
 } crypto_seed;
 
-int urc_crypto_seed_parse(const uint8_t *buffer, size_t len, crypto_seed *out);
+int urc_crypto_seed_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, crypto_seed *out);
 
 #ifdef __cplusplus
 }

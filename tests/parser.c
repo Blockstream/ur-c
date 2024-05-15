@@ -40,7 +40,7 @@ void test_format_key_origin(const crypto_hdkey *key, const char *expected)
     TEST_ASSERT_EQUAL_STRING(expected, keypath);
 }
 
-TEST(parser, crypto_seed_parse)
+TEST(parser, crypto_seed_deserialize)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#exampletest-vector-1
     const char *hex = "a20150c7098580125e2ab0981253468b2dbc5202d8641947da";
@@ -49,14 +49,14 @@ TEST(parser, crypto_seed_parse)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_seed seed;
-    int err = urc_crypto_seed_parse(raw, len, &seed);
+    int err = urc_crypto_seed_deserialize(raw, len, &seed);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(18394, seed.creation_date);
     TEST_ASSERT_EQUAL_HEX(0xc7, seed.seed[0]);
     TEST_ASSERT_EQUAL_HEX(0x52, seed.seed[CRYPTO_SEED_SIZE - 1]);
 }
 
-TEST(parser, crypto_psbt_parse)
+TEST(parser, crypto_psbt_deserialize)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt
     const char *hex = "58a770736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd7500"
@@ -71,14 +71,14 @@ TEST(parser, crypto_psbt_parse)
     uint8_t buffer[1000];
     psbt.buffer = buffer;
     psbt.buffer_size = BUFLEN;
-    int err = urc_crypto_psbt_parse(raw, len, &psbt);
+    int err = urc_crypto_psbt_deserialize(raw, len, &psbt);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(167, psbt.psbt_len);
     TEST_ASSERT_EQUAL_HEX(0x70, psbt.buffer[0]);
     TEST_ASSERT_EQUAL_HEX(0x00, psbt.buffer[psbt.psbt_len - 1]);
 }
 
-TEST(parser, crypto_eckey_parse)
+TEST(parser, crypto_eckey_deserialize)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt
     const char *hex = "a202f50358208c05c4b4f3e88840a4f4b5f155cfd69473ea169f3d0431b7a6787a23777f08aa";
@@ -87,14 +87,14 @@ TEST(parser, crypto_eckey_parse)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_eckey eckey;
-    int err = urc_crypto_eckey_parse(raw, len, &eckey);
+    int err = urc_crypto_eckey_deserialize(raw, len, &eckey);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(eckey_type_private, eckey.type);
     TEST_ASSERT_EQUAL_HEX(0x8c, eckey.key.prvate[0]);
     TEST_ASSERT_EQUAL_HEX(0xaa, eckey.key.prvate[CRYPTO_ECKEY_PRIVATE_SIZE - 1]);
 }
 
-TEST(parser, crypto_hdkey_parse_1)
+TEST(parser, crypto_hdkey_deserialize_1)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-007-hdkey.md#exampletest-vector-1
     const char *hex = "a301f503582100e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35045820873dff81c02f525623fd1f"
@@ -104,7 +104,7 @@ TEST(parser, crypto_hdkey_parse_1)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_hdkey hdkey;
-    int err = urc_crypto_hdkey_parse(raw, len, &hdkey);
+    int err = urc_crypto_hdkey_deserialize(raw, len, &hdkey);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(hdkey_type_master, hdkey.type);
     TEST_ASSERT_EQUAL_HEX(0x00, hdkey.key.master.keydata[0]);
@@ -134,7 +134,7 @@ TEST(parser, crypto_hdkey_parse_1)
     }
 }
 
-TEST(parser, crypto_hdkey_parse_2)
+TEST(parser, crypto_hdkey_deserialize_2)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-007-hdkey.md#exampletest-vector-2
     const char *hex = "a5035821026fe2355745bb2db3630bbc80ef5d58951c963c841f54170ba6e5c12be7fc12a6045820ced155c72456255881793514ed"
@@ -144,7 +144,7 @@ TEST(parser, crypto_hdkey_parse_2)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_hdkey hdkey;
-    int err = urc_crypto_hdkey_parse(raw, len, &hdkey);
+    int err = urc_crypto_hdkey_deserialize(raw, len, &hdkey);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(hdkey_type_derived, hdkey.type);
 
@@ -216,7 +216,7 @@ TEST(parser, crypto_hdkey_parse_2)
     }
 }
 
-TEST(parser, crypto_output_parse_1)
+TEST(parser, crypto_output_deserialize_1)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-1
     const char *hex = "d90193d90132a103582102c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5";
@@ -225,7 +225,7 @@ TEST(parser, crypto_output_parse_1)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_output output;
-    int err = urc_crypto_output_parse(raw, len, &output);
+    int err = urc_crypto_output_deserialize(raw, len, &output);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(output_type__, output.type);
     TEST_ASSERT_EQUAL(keyexp_keytype_eckey, output.output.key.keytype);
@@ -234,7 +234,7 @@ TEST(parser, crypto_output_parse_1)
     TEST_ASSERT_EQUAL_HEX(0xe5, output.output.key.key.eckey.key.public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
 }
 
-TEST(parser, crypto_output_parse_2)
+TEST(parser, crypto_output_deserialize_2)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-1
     const char *hex = "d90190d90194d90132a103582103fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556";
@@ -243,7 +243,7 @@ TEST(parser, crypto_output_parse_2)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_output output;
-    int err = urc_crypto_output_parse(raw, len, &output);
+    int err = urc_crypto_output_deserialize(raw, len, &output);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(output_type_sh, output.type);
     TEST_ASSERT_EQUAL(keyexp_type_wpkh, output.output.key.type);
@@ -253,7 +253,7 @@ TEST(parser, crypto_output_parse_2)
     TEST_ASSERT_EQUAL(0x56, output.output.key.key.eckey.key.public_compressed[CRYPTO_ECKEY_PUBLIC_COMPRESSED_SIZE - 1]);
 }
 
-TEST(parser, crypto_output_parse_3)
+TEST(parser, crypto_output_deserialize_3)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-010-output-desc.md#exampletest-vector-3
     const char *hex = "d90190d90196a201020282d90132a1035821022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01d901"
@@ -263,11 +263,11 @@ TEST(parser, crypto_output_parse_3)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_output output;
-    int err = urc_crypto_output_parse(raw, len, &output);
+    int err = urc_crypto_output_deserialize(raw, len, &output);
     TEST_ASSERT_EQUAL(URC_EUNHANDLEDCASE, err);
 }
 
-TEST(parser, crypto_output_parse_4)
+TEST(parser, crypto_output_deserialize_4)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-4
     const char *hex =
@@ -278,7 +278,7 @@ TEST(parser, crypto_output_parse_4)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_output output;
-    int err = urc_crypto_output_parse(raw, len, &output);
+    int err = urc_crypto_output_deserialize(raw, len, &output);
     TEST_ASSERT_EQUAL(URC_OK, err);
     TEST_ASSERT_EQUAL(output_type__, output.type);
     TEST_ASSERT_EQUAL(keyexp_type_pkh, output.output.key.type);
@@ -347,7 +347,7 @@ TEST(parser, crypto_output_parse_4)
     }
 }
 
-TEST(parser, crypto_output_parse_5)
+TEST(parser, crypto_output_deserialize_5)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-010-output-desc.md#exampletest-vector-5
     const char *hex = "d90191d90196a201010282d9012fa403582103cbcaa9c98c877a26977d00825c956a238e8dddfbd322cce4f74b0b5bd6ace4a70458"
@@ -359,11 +359,11 @@ TEST(parser, crypto_output_parse_5)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_output output;
-    int err = urc_crypto_output_parse(raw, len, &output);
+    int err = urc_crypto_output_deserialize(raw, len, &output);
     TEST_ASSERT_EQUAL(URC_EUNHANDLEDCASE, err);
 }
 
-TEST(parser, crypto_account_parse)
+TEST(parser, crypto_account_deserialize)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md#exampletest-vector
     const char *hex =
@@ -385,7 +385,7 @@ TEST(parser, crypto_account_parse)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_account account;
-    int err = urc_crypto_account_parse(raw, len, &account);
+    int err = urc_crypto_account_deserialize(raw, len, &account);
     TEST_ASSERT_EQUAL(URC_ETAPROOTNOTSUPPORTED, err);
 
     TEST_ASSERT_EQUAL(934670036, account.master_fingerprint);
@@ -705,7 +705,7 @@ TEST(parser, crypto_account_parse)
     }
 }
 
-TEST(parser, crypto_jadeaccount_parse)
+TEST(parser, crypto_jadeaccount_deserialize)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-015-account.md#exampletest-vector
     const char *hex =
@@ -716,7 +716,7 @@ TEST(parser, crypto_jadeaccount_parse)
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     crypto_account account;
-    int err = urc_jade_account_parse(raw, len, &account);
+    int err = urc_jade_account_deserialize(raw, len, &account);
     TEST_ASSERT_EQUAL(URC_OK, err);
 
     TEST_ASSERT_EQUAL(3055639915, account.master_fingerprint);
@@ -762,7 +762,7 @@ TEST(parser, crypto_jadeaccount_parse)
     }
 }
 
-TEST(parser, jaderesponse_parse)
+TEST(parser, jaderesponse_deserialize)
 {
     const char *hex =
         "a2667075626b657958210252835e60d6157695c0faf7ab501c1ef206332652f47a4a69d09a388632b2428369656e6372797074656458606ebdd102c0"
@@ -776,7 +776,7 @@ TEST(parser, jaderesponse_parse)
     jade_bip8539_response response;
     uint8_t *out;
 
-    int err = urc_jade_bip8539_response_parse(raw, len, &response);
+    int err = urc_jade_bip8539_response_deserialize(raw, len, &response);
     TEST_ASSERT_EQUAL(URC_OK, err);
 
     TEST_ASSERT_EQUAL_HEX(0x02, response.pubkey[0]);

@@ -9,7 +9,7 @@ extern "C" {
 
 #include "urc/error.h"
 
-int urc_jade_rpc_parse(const uint8_t *cbor, size_t cbor_len, char **out);
+int urc_jade_rpc_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, char **out);
 
 #ifdef __cplusplus
 }

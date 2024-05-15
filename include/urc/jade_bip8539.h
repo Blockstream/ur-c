@@ -29,8 +29,9 @@ typedef struct {
     uint8_t *encrypted_data;
 } jade_bip8539_response;
 
-int urc_jade_bip8539_request_format(const jade_bip8539_request *request, uint8_t **out, size_t *len);
-int urc_jade_bip8539_response_parse(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response);
+// ``response`` must be freed by caller using urc_jade_bip8539_response_free
+int urc_jade_bip8539_response_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, jade_bip8539_response *response);
+int urc_jade_bip8539_request_serialize(const jade_bip8539_request *request, uint8_t **cbor_out, size_t *cbor_len);
 void urc_jade_bip8539_response_free(jade_bip8539_response *response);
 
 #ifdef __cplusplus

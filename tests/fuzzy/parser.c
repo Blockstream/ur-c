@@ -7,7 +7,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t len) {
     int result;
 
     crypto_seed seed;
-    result = urc_crypto_seed_parse(data, len, &seed);
+    result = urc_crypto_seed_deserialize(data, len, &seed);
     if(result == URC_OK) {
         return -1;
     }
@@ -16,48 +16,48 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t len) {
     uint8_t buffer[BUFSIZE];
     psbt.buffer = buffer;
     psbt.buffer_size = BUFSIZE;
-    result = urc_crypto_psbt_parse(data, len, &psbt);
+    result = urc_crypto_psbt_deserialize(data, len, &psbt);
     if(result == URC_OK) {
         return -1;
     }
 
     crypto_eckey eckey;
-    result = urc_crypto_eckey_parse(data, len, &eckey);
+    result = urc_crypto_eckey_deserialize(data, len, &eckey);
     if(result == URC_OK) {
         return -1;
     }
 
     crypto_hdkey hdkey;
-    result = urc_crypto_hdkey_parse(data, len, &hdkey);
+    result = urc_crypto_hdkey_deserialize(data, len, &hdkey);
     if(result == URC_OK) {
         return -1;
     }
 
     crypto_output output;
-    result = urc_crypto_output_parse(data, len, &output);
+    result = urc_crypto_output_deserialize(data, len, &output);
     if(result == URC_OK) {
         return -1;
     }
 
     crypto_account account;
-    result = urc_crypto_account_parse(data, len, &account);
+    result = urc_crypto_account_deserialize(data, len, &account);
     if(result == URC_OK) {
         return -1;
     }
-    result = urc_jade_account_parse(data, len, &account);
+    result = urc_jade_account_deserialize(data, len, &account);
     if(result == URC_OK) {
         return -1;
     }
 
     jade_bip8539_response response;
-    result = urc_jade_bip8539_response_parse(data, len, &response);
+    result = urc_jade_bip8539_response_deserialize(data, len, &response);
     urc_jade_bip8539_response_free(&response);
     if (result != URC_OK) {
         return -1;
     }
 
     char *out = NULL;
-    result = urc_jade_rpc_parse(data, len, &out);
+    result = urc_jade_rpc_deserialize(data, len, &out);
     if (result != URC_OK) {
         return -1;
     }

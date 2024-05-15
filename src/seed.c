@@ -5,9 +5,10 @@
 #include "macros.h"
 #include "utils.h"
 
-int internal_parse_seed(CborValue *iter, crypto_seed *out);
+int urc_crypto_seed_deserialize_impl(CborValue *iter, crypto_seed *out);
 
-int urc_crypto_seed_parse(const uint8_t *buffer, size_t len, crypto_seed *out) {
+int urc_crypto_seed_deserialize(const uint8_t *buffer, size_t len, crypto_seed *out)
+{
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -16,10 +17,11 @@ int urc_crypto_seed_parse(const uint8_t *buffer, size_t len, crypto_seed *out) {
         int result = URC_ECBORINTERNALERROR;
         return result;
     }
-    return internal_parse_seed(&iter, out);
+    return urc_crypto_seed_deserialize_impl(&iter, out);
 }
 
-int internal_parse_seed(CborValue *iter, crypto_seed *out) {
+int urc_crypto_seed_deserialize_impl(CborValue *iter, crypto_seed *out)
+{
     int result = URC_OK;
 
     CHECK_IS_TYPE(iter, map, result, exit);

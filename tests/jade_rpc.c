@@ -23,7 +23,7 @@ TEST(jade_rpc, parse_jade_pin) {
     TEST_ASSERT_GREATER_THAN_INT(0, len);
 
     char *out = NULL;
-    int result = urc_jade_rpc_parse(raw, len, &out);
+    int result = urc_jade_rpc_deserialize(raw, len, &out);
     TEST_ASSERT_EQUAL_INT(URC_OK, result);
 
     const char *expected =

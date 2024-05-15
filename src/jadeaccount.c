@@ -9,9 +9,10 @@
 #include "macros.h"
 #include "utils.h"
 
-int urc_jade_account_parse_impl(CborValue *iter, crypto_account *out);
+int urc_jade_account_deserialize_impl(CborValue *iter, crypto_account *out);
 
-int urc_jade_account_parse(const uint8_t *buffer, size_t len, crypto_account *out) {
+int urc_jade_account_deserialize(const uint8_t *buffer, size_t len, crypto_account *out)
+{
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -19,10 +20,11 @@ int urc_jade_account_parse(const uint8_t *buffer, size_t len, crypto_account *ou
     if (err != CborNoError) {
         return URC_ECBORINTERNALERROR;
     }
-    return urc_jade_account_parse_impl(&iter, out);
+    return urc_jade_account_deserialize_impl(&iter, out);
 }
 
-int urc_jade_account_parse_impl(CborValue *iter, crypto_account *out) {
+int urc_jade_account_deserialize_impl(CborValue *iter, crypto_account *out)
+{
     int result = URC_OK;
     out->descriptors_count = 0;
     bool taproot_found = false;
@@ -63,7 +65,7 @@ int urc_jade_account_parse_impl(CborValue *iter, crypto_account *out) {
         int limit = DESCRIPTORS_MAX_SIZE > len ? len : DESCRIPTORS_MAX_SIZE;
         int item_idx = 0;
         for (int parser_idx = 0; parser_idx < limit; parser_idx++) {
-            result = urc_crypto_output_parse_impl(&array_item, &out->descriptors[item_idx++]);
+            result = urc_crypto_output_deserialize_impl(&array_item, &out->descriptors[item_idx++]);
             // // WARNING: taproot not yet supported, skipping it
             if (result == URC_ETAPROOTNOTSUPPORTED) {
                 taproot_found = true;

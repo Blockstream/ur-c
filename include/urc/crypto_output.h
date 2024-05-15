@@ -49,7 +49,7 @@ typedef struct {
     } type;
 } crypto_output;
 
-int urc_crypto_output_parse(const uint8_t *buffer, size_t len, crypto_output *out);
+int urc_crypto_output_deserialize(const uint8_t *cbor_buffer, size_t cbor_len, crypto_output *out);
 
 #ifdef __cplusplus
 }

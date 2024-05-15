@@ -5,9 +5,10 @@
 #include "macros.h"
 #include "utils.h"
 
-int urc_crypto_psbt_parse_impl(CborValue *iter, crypto_psbt *out);
+int urc_crypto_psbt_deserialize_impl(CborValue *iter, crypto_psbt *out);
 
-int urc_crypto_psbt_parse(const uint8_t *buffer, size_t len, crypto_psbt *out) {
+int urc_crypto_psbt_deserialize(const uint8_t *buffer, size_t len, crypto_psbt *out)
+{
     CborParser parser;
     CborValue iter;
     CborError err;
@@ -15,10 +16,11 @@ int urc_crypto_psbt_parse(const uint8_t *buffer, size_t len, crypto_psbt *out) {
     if (err != CborNoError) {
         return URC_ECBORINTERNALERROR;
     }
-    return urc_crypto_psbt_parse_impl(&iter, out);
+    return urc_crypto_psbt_deserialize_impl(&iter, out);
 }
 
-int urc_crypto_psbt_parse_impl(CborValue *iter, crypto_psbt *out) {
+int urc_crypto_psbt_deserialize_impl(CborValue *iter, crypto_psbt *out)
+{
     out->psbt_len = 0;
     int result = URC_OK;
 
