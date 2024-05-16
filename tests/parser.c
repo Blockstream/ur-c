@@ -56,28 +56,6 @@ TEST(parser, crypto_seed_deserialize)
     TEST_ASSERT_EQUAL_HEX(0x52, seed.seed[CRYPTO_SEED_SIZE - 1]);
 }
 
-TEST(parser, crypto_psbt_deserialize)
-{
-    // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt
-    const char *hex = "58a770736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd7500"
-                      "00000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffff"
-                      "ff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2"
-                      "e5f0f876a588df5546e8742d1d87008f000000000000000000";
-    uint8_t raw[BUFLEN];
-    size_t len = h2b(hex, BUFLEN, (uint8_t *)&raw);
-    TEST_ASSERT_GREATER_THAN_INT(0, len);
-
-    crypto_psbt psbt;
-    uint8_t buffer[1000];
-    psbt.buffer = buffer;
-    psbt.buffer_size = BUFLEN;
-    int err = urc_crypto_psbt_deserialize(raw, len, &psbt);
-    TEST_ASSERT_EQUAL(URC_OK, err);
-    TEST_ASSERT_EQUAL(167, psbt.psbt_len);
-    TEST_ASSERT_EQUAL_HEX(0x70, psbt.buffer[0]);
-    TEST_ASSERT_EQUAL_HEX(0x00, psbt.buffer[psbt.psbt_len - 1]);
-}
-
 TEST(parser, crypto_eckey_deserialize)
 {
     // https://github.com/BlockchainCommons/Research/blob/master/papers/urc-2020-006-urtypes.md#partially-signed-bitcoin-transaction-psbt-crypto-psbt

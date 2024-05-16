@@ -3,7 +3,6 @@
 
 TEST_GROUP_RUNNER(parser) {
     RUN_TEST_CASE(parser, crypto_seed_deserialize);
-    RUN_TEST_CASE(parser, crypto_psbt_deserialize);
     RUN_TEST_CASE(parser, crypto_eckey_deserialize);
     RUN_TEST_CASE(parser, crypto_hdkey_deserialize_1);
     RUN_TEST_CASE(parser, crypto_hdkey_deserialize_2);
@@ -27,10 +26,15 @@ TEST_GROUP_RUNNER(jade_rpc) {
     RUN_TEST_CASE(jade_rpc, parse_jade_pin_3);
 }
 
+TEST_GROUP_RUNNER(psbt) {
+    RUN_TEST_CASE(psbt, test_vector_1);
+}
+
 static void RunAllTests(void) {
     RUN_TEST_GROUP(parser);
     RUN_TEST_GROUP(formatter);
     RUN_TEST_GROUP(jade_rpc);
+    RUN_TEST_GROUP(psbt);
 }
 
 int main(int argc, const char *argv[]) { return UnityMain(argc, argv, RunAllTests); }

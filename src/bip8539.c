@@ -38,6 +38,7 @@ static int jade_bip8539_request_serialize_op(CborEncoder *encoder, const jade_bi
 
 static int jade_bip8539_response_deserialize_op(CborValue *iter, jade_bip8539_response *out, uint8_t *buffer, size_t len)
 {
+    out->encrypted_data = NULL;
     out->encrypted_len = 0;
     int result = URC_OK;
 
@@ -125,6 +126,8 @@ int urc_jade_bip8539_request_serialize(const jade_bip8539_request *request, uint
 
 int urc_jade_bip8539_response_deserialize(const uint8_t *cbor, size_t cbor_len, jade_bip8539_response *response)
 {
+    response->encrypted_data = NULL;
+    response->encrypted_len = 0;
     int result = URC_OK;
     size_t buffer_len = cbor_len;
     uint8_t *buffer = NULL;

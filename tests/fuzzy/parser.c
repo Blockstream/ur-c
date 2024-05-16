@@ -13,13 +13,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t len) {
     }
 
     crypto_psbt psbt;
-    uint8_t buffer[BUFSIZE];
-    psbt.buffer = buffer;
-    psbt.buffer_size = BUFSIZE;
     result = urc_crypto_psbt_deserialize(data, len, &psbt);
-    if(result == URC_OK) {
-        return -1;
-    }
+    // it is so easy to generate a valid cbor representation of a psbt that checking the result is pointless
+    urc_crypto_psbt_free(&psbt);
 
     crypto_eckey eckey;
     result = urc_crypto_eckey_deserialize(data, len, &eckey);

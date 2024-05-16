@@ -10,6 +10,7 @@ add_executable(
     helpers.c
     formatter.c
     parser.c
+    psbt.c
     runner.c
     jade_rpc.c
 )
