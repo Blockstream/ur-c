@@ -35,7 +35,7 @@ macro(fetch_wally)
     ExternalProject_Add(
         wallycore-external
         GIT_REPOSITORY https://github.com/ElementsProject/libwally-core.git
-        GIT_TAG release_1.0.0
+        GIT_TAG release_1.2.0
         GIT_SUBMODULES src/secp256k1
         GIT_SHALLOW TRUE
         UPDATE_DISCONNECTED TRUE
