@@ -7,7 +7,7 @@
             "binaryDir": "${sourceDir}/build/default",
             "installDir": "${sourceDir}/install/default",
             "cacheVariables": {
-                "FETCH_DEPS": {
+                "URC_FETCH_DEPS": {
                     "type": "BOOL",
                     "value": "ON"
                 },
@@ -27,11 +27,15 @@
             "binaryDir": "${sourceDir}/build/dev",
             "installDir": "${sourceDir}/install/dev",
             "cacheVariables": {
-                "FETCH_DEPS": {
+                "URC_FETCH_DEPS": {
                     "type": "BOOL",
                     "value": "ON"
                 },
-                "ENABLE_TESTS": {
+                "URC_ENABLE_TESTS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "URC_ENABLE_COVERAGE": {
                     "type": "BOOL",
                     "value": "ON"
                 },
@@ -47,11 +51,11 @@
             "binaryDir": "${sourceDir}/build/fuzzy",
             "installDir": "${sourceDir}/install/fuzzy",
             "cacheVariables": {
-                "FETCH_DEPS": {
+                "URC_FETCH_DEPS": {
                     "type": "BOOL",
                     "value": "ON"
                 },
-                "ENABLE_TESTS": {
+                "URC_ENABLE_TESTS": {
                     "type": "BOOL",
                     "value": "ON"
                 },
@@ -59,7 +63,7 @@
                     "type": "STRING",
                     "value": "clang"
                 },
-                "ENABLE_FUZZ_TESTS": {
+                "URC_ENABLE_FUZZ_TESTS": {
                     "type": "BOOL",
                     "value": "ON"
                 },

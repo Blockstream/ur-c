@@ -6,13 +6,14 @@ project(urc
 )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(FETCH_DEPS "tell cmake to go fetch dependencies itself" OFF)
-option(ENABLE_TESTS "enable tests" OFF)
-option(ENABLE_FUZZ_TESTS "enable fuzzy tests" OFF)
+option(URC_FETCH_DEPS "tell cmake to go fetch dependencies itself" OFF)
+option(URC_ENABLE_TESTS "enable tests" OFF)
+option(URC_ENABLE_FUZZ_TESTS "enable fuzzy tests" OFF)
+option(URC_ENABLE_COVERAGE "enable code coverage" OFF)
 
 ### dependencies
 include(cmake/dependencies.cmake)
-if (FETCH_DEPS)
+if (URC_FETCH_DEPS)
     fetch_tinycbor()
     fetch_wally()
 else()
@@ -54,7 +55,7 @@ install(EXPORT "urc-target"
     FILE "urc-targets.cmake"
 )
 
-if(NOT ENABLE_TESTS)
+if(NOT URC_ENABLE_TESTS)
     return()
 endif()
 

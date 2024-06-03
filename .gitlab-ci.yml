@@ -46,7 +46,7 @@ mingw-test:
   script:
     ## old version of cmake, presets won't work
     - cmake -B build -S .
-      -DFETCH_DEPS:BOOL=ON
+      -DURC_FETCH_DEPS:BOOL=ON
       -DCMAKE_BUILD_TYPE:STRING=Debug
       -DCMAKE_SYSTEM_NAME=Windows
       -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc-posix
