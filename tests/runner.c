@@ -37,6 +37,7 @@ TEST_GROUP_RUNNER(output) {
 
 TEST_GROUP_RUNNER(account) {
     RUN_TEST_CASE(account, test_vector_1);
+    RUN_TEST_CASE(account, jadetest);
     RUN_TEST_CASE(account, jade);
 }
 

@@ -75,15 +75,48 @@ TEST(account, test_vector_1)
 TEST(account, jade)
 {
     const char *hex =
-        "a2011ab6215d6b0281d90194d9012fa4035821025d6aca89f721020f672d1653f87d171c1ad4103a24e8eaa3a07c596bc6652f7a045820e6b977baf5"
-        "cd1a24eedb65292c78b4680f658ab11aeff1671d5246f71636860b06d90130a301861854f500f500f5021ab6215d6b0303081a97538da9";
+        "a2011ae3ebcc790281d90194d9012fa40358210354de5de4043b72d3e7529d57fc4e798bbf371478ada068eb20c84d3e45e14dea0458200977e5bab6"
+        "742423edc8a588c061ce96a1bdf6dc15016db3f3b7bb62c180c6f706d90130a301861854f500f501f5021ae3ebcc790303081a810d05a0";
 
     const size_t expected_desc_size = 1;
     const char *expected_desc[] = {
-        "wpkh([b6215d6b/84'/0'/"
-        "0']xpub6CmHFAns2t9zT1HUC5YFEjzcNiwUdQEiez6o2NvVSRvrk5nC3s8mwW57GvPNCEJ2tQTpVa21Gyu4GJgUPfT3NgahVcsTiNCQnMXXTkpq5Ld/0/"
+        "wpkh([e3ebcc79/84'/0'/"
+        "1']xpub6CbnTfaeNsCD1nUCyoVq9k4L7TdZ88ai4b9CMRh4R1sbPYGRTUubBmBrA1iejEGfxprJ4LHufCk9kjfHKpZob4vMhqUjpkv1cVjzQVyV2sf/0/"
         "*)"};
-    const uint32_t expected_fpr = 3055639915;
+    const uint32_t expected_fpr = 3823881337;
+
+    uint8_t raw[BUFLEN];
+    size_t len = h2b(hex, BUFLEN, (uint8_t *)(&raw));
+    TEST_ASSERT_GREATER_THAN_INT(0, len);
+
+    crypto_account account;
+    int err = urc_jade_account_deserialize(raw, len, &account);
+    TEST_ASSERT_EQUAL(URC_OK, err);
+
+    TEST_ASSERT_EQUAL(expected_fpr, account.master_fingerprint);
+    TEST_ASSERT_EQUAL(expected_desc_size, account.descriptors_count);
+
+    char **descs;
+    err = urc_crypto_account_format(&account, urc_crypto_output_format_mode_BIP44_compatible, &descs);
+    TEST_ASSERT_NULL(descs[expected_desc_size]);
+    TEST_ASSERT_EQUAL_STRING_ARRAY(expected_desc, descs, expected_desc_size);
+
+    urc_string_array_free(descs);
+}
+
+TEST(account, jadetest)
+{
+    const char *hex =
+        "a2011ae3ebcc790281d90194d9012fa5035821031cdc14e10468906090ab0a43ee58357e3c67cefaf98bbd942a6b17ab0db33c3f0458205f1909e00d"
+        "bca8835ed242f0ccd968f14bb01403b4fdf91d0c07ffb55bcddbe805d90131a20100020106d90130a301861854f501f501f5021ae3ebcc790303081a"
+        "5f5ef8b6";
+
+    const size_t expected_desc_size = 1;
+    const char *expected_desc[] = {
+        "wpkh([e3ebcc79/84'/1'/"
+        "1']tpubDCj4DJ2igAAqHHku5UaNj3PJ1wUuvuKm4hgAMn2yv5iCT7P7WB913LuivgJKYV5QvzkJb8T395Y5i9fVBcupJb5fbt6TM4TWaA67TxsVwZM/0/"
+        "*)"};
+    const uint32_t expected_fpr = 3823881337;
 
     uint8_t raw[BUFLEN];
     size_t len = h2b(hex, BUFLEN, (uint8_t *)(&raw));
