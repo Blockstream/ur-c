@@ -477,15 +477,15 @@ int urc_hdkey_getversion(const crypto_hdkey *hdkey, uint32_t *out)
     *out = 0;
     switch (hdkey->type) {
     case hdkey_type_master:
-        *out = 0x0488ADE4;
+        *out = BIP32_VER_MAIN_PRIVATE;
         break;
     case hdkey_type_derived:
         switch (hdkey->key.derived.useinfo.network) {
         case CRYPTO_COININFO_MAINNET:
-            *out = hdkey->key.derived.is_private ? 0x0488ADE4 : 0x0488B21E;
+            *out = hdkey->key.derived.is_private ? BIP32_VER_MAIN_PRIVATE : BIP32_VER_MAIN_PUBLIC;
             break;
         case CRYPTO_COININFO_TESTNET:
-            *out = hdkey->key.derived.is_private ? 0x04358394 : 0x043587CF;
+            *out = hdkey->key.derived.is_private ? BIP32_VER_TEST_PRIVATE : BIP32_VER_TEST_PUBLIC;
             break;
         default:
             return URC_EUNHANDLEDCASE;
